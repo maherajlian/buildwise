@@ -1,0 +1,13 @@
+{
+  "name": "buildwise",
+  "private": true,
+  "packageManager": "pnpm@12.16.1",
+  "scripts": {
+    "dev": "pnpm -C apps/web dev",
+    "generate:types": "openapi-typescript packages/shared-types/openapi.json --default-non-nullable false -o packages/shared-types/api.d.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.10.1",
+    "prettier": "^3.10.1"
+  }
+}
