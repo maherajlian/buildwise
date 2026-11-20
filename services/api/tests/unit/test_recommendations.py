@@ -257,6 +257,15 @@ def test_negated_budget_does_not_override_mvp(phrase: str) -> None:
     assert (budget.value, budget.source) == ("low", "detected")
 
 
+def test_negative_context_does_not_cancel_zero_budget() -> None:
+    signals, _ = derive_signals(
+        {"constraints": ["We have no staff and no budget"]}, [], Overrides()
+    )
+    budget = next(s for s in signals if s.id == "budget")
+    assert (budget.value, budget.source) == ("zero", "detected")
+    assert budget.evidence[0].excerpt == "We have no staff and no budget"
+
+
 def test_budget_detection_continues_after_a_negated_match() -> None:
     signals, _ = derive_signals(
         {"constraints": ["Not a flexible budget today. Next year: flexible budget."]},

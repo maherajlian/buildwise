@@ -101,6 +101,7 @@ def derive_signals(
                         m
                         for m in re.finditer(r"\b(?:" + pattern + r")\b", text, re.I)
                         if key != "budget"
+                        or value == "zero"
                         or not NEGATED_PREFIX.search(text[: m.start()])
                     ),
                     None,
