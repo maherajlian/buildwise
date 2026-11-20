@@ -29,7 +29,7 @@ def owner_hash(token: str) -> str:
 def get_project(
     session: Session, project_id: UUID, token: str | None, *, write: bool = False
 ) -> Project:
-    project = session.get(Project, project_id)
+    project = session.get(Project, project_id, with_for_update=write)
     owned = (
         project is not None
         and token is not None
