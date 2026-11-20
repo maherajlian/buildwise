@@ -1,10 +1,11 @@
-# System design (initial)
+# BuildWise system design
 
-Status: draft v0.1 (2026-11-20). Hosting targets are proposals pending the deployment spike (ADR-0003).
+Public MVP architecture. See [hosting ADR](../adr/0003-hosting-platform.md),
+[telemetry ADR](../adr/0004-observability.md) and the [release workflow](../../.github/workflows/deploy-production.yml).
 
 ## Logical architecture
 
-Phase 3 backend derives versioned signals from discovery and requirements, with
+The backend derives versioned signals from discovery and requirements, with
 explicit overrides in `recommendation_inputs`. Its pure scoring engine sums matching
 catalogue rule weights and breaks ties by entry id. Generation performs no network
 calls and stores no result timestamps; canonical signal values produce a SHA-256
@@ -14,6 +15,14 @@ The public catalogue endpoint serves the same startup-validated catalogue used b
 the engine. Project endpoints reuse browser-token ownership and public read-only
 sample access. The static client fetches these endpoints for the Architecture tab
 and catalogue browser; owner overrides are saved with the existing project token.
+
+The browser generates a random token once when creating a first project. The
+API stores only its hash and checks it on each private project read or write.
+The public seed is readable without a token and cannot be mutated through the
+API. Alembic migrates PostgreSQL before the API starts. Deployment startup
+reseeds only the sample's discovery, requirements, documents, tasks and plans.
+The workbench layer assembles the browser's recent-project summary and exports
+current documents and plans as one Markdown project pack.
 
 ```mermaid
 flowchart TD
@@ -27,19 +36,22 @@ flowchart TD
     H[/health /ready/]
   end
   R -->|reads| C[(Versioned technology\ncatalogue in API package)]
-  A -->|SQLAlchemy + Alembic| DB[(PostgreSQL\nfree tier)]
+  A -->|SQLAlchemy + Alembic| DB[(Neon Free PostgreSQL)]
   A -->|OTLP/HTTP, batched| G[Grafana Cloud Free\nMetrics · Logs · Traces]
   A -.->|local fallback| L[Local LGTM via Docker Compose]
 ```
 
-## Deployment architecture (proposed)
+## Deployment architecture
 
-| Component | Proposed host | Why |
+| Component | Host | Why |
 |---|---|---|
-| Frontend | Next.js `output: 'export'` static site on Cloudflare Pages | No server runtime needed; avoids Next.js-on-Workers adapter limits; unlimited static requests on free plan (to be verified). |
-| API | FastAPI container on Render free web service (fallback: see assessment) | Runs standard CPython + SQLAlchemy + OTel without adaptation; sleeps when idle (documented). |
-| Database | Supabase Free or Neon Free Postgres | Managed Postgres; pause/size limits documented. |
+| Frontend | Next.js static export on Cloudflare Pages | No server runtime, no Workers Functions; unlimited static requests on the free plan. |
+| API | One FastAPI container on Render Free | Standard CPython + SQLAlchemy + OpenTelemetry; can sleep when idle. |
+| Database | Neon Free PostgreSQL | Managed Postgres with compute resume; verify storage/compute quota. |
 | Telemetry | OTel SDK in the API exporting OTLP/HTTP directly to Grafana Cloud | No extra collector service to host; collector only in the local profile. |
-| CI/CD | GitHub Actions (public repo) | Free minutes for public repos. |
+| CI/CD | GitHub Actions (public repo, standard runners) | PR and main CI; deploys the tested main commit to both providers. |
 
-The browser calls the API directly (CORS restricted to the Pages origin). No secrets live in the frontend.
+The browser calls the API directly; production CORS is restricted to the Pages
+origin. No secrets live in the frontend. See the
+[free-tier assessment](../hosting/free-tier-assessment.md) for limits and the
+[operations runbook](../operations/observability.md) for telemetry and recovery.

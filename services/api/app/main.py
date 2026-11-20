@@ -20,6 +20,7 @@ from app.modules.recommendations.catalogue_loader import load_catalogue
 from app.modules.recommendations.router import router as recommendations_router
 from app.modules.requirements.router import router as requirements_router
 from app.modules.specifications.router import router as specifications_router
+from app.modules.workbench import router as workbench_router
 from app.telemetry.database import instrument_database
 from app.telemetry.http import RequestTelemetry
 from app.telemetry.setup import configure_telemetry
@@ -129,6 +130,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(specifications_router)
     app.include_router(planning_router)
     app.include_router(operations_router)
+    app.include_router(workbench_router)
     app.add_middleware(RequestSafety)
     app.add_middleware(
         JsonCORS,

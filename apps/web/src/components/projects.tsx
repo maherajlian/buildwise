@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FolderKanban, Plus, ArrowDown, Eye } from "lucide-react";
 import { api, ApiError, type Project } from "@/lib/api";
-import { getProjectToken } from "@/lib/token";
+import { getProjectToken, readProjectToken } from "@/lib/token";
 import { Button } from "@/components/ui/button";
 import { FieldError, requiredError } from "@/components/form-error";
 
@@ -33,7 +33,9 @@ export function Projects() {
     let disposed = false;
     async function load() {
       try {
-        const result = await api.projects(getProjectToken());
+        const token = readProjectToken();
+        if (!token) return;
+        const result = await api.projects(token);
         if (!disposed) {
           setItems(result.items);
           setCursor(result.next_cursor);
@@ -171,8 +173,8 @@ export function Projects() {
             <div className="min-w-0">
               <p className="font-semibold">Not sure where to start?</p>
               <p className="text-sm text-slate-500">
-                Explore an illustrative, read-only sample project with a
-                completed discovery and requirements.
+                Explore the fictional restaurant booking project, from discovery
+                to delivery. Read-only; no account needed.
               </p>
             </div>
             <Link href="/projects/view/?id=sample" className="sample-link">

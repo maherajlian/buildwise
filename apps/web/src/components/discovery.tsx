@@ -196,7 +196,10 @@ export function DiscoveryWizard({
         >
           <ErrorBox error={error} />
           {current.id === "review" ? (
-            <Review answers={toAnswers(draft)} />
+            <>
+              <h3 className="mb-3 font-semibold">Project brief</h3>
+              <Review answers={toAnswers(draft)} />
+            </>
           ) : (
             current.fields.map((name) => {
               const field = name as Field;

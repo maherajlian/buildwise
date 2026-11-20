@@ -387,14 +387,16 @@ def generate(
     }
 
 
-def markdown(data: OperationsRead, kinds: list[str] | None = None) -> str:
+def markdown(
+    data: OperationsRead, kinds: list[str] | None = None, *, level: int = 1
+) -> str:
     selected = kinds or ["test_cases", "risks", "slos"]
-    lines = ["# Validate and operate", HEADER]
+    lines = [f"{'#' * level} Validate and operate", HEADER]
     if "test_cases" in selected:
         executed = sum(case.executed for case in data.test_cases)
         proposed = sum(case.status == "proposed" for case in data.test_cases)
         lines += [
-            "## Test plan",
+            f"{'#' * (level + 1)} Test plan",
             f"Proposed (not yet run): {proposed}",
             f"Executed: {executed}",
             f"Not executed: {len(data.test_cases) - executed}",
@@ -406,7 +408,7 @@ def markdown(data: OperationsRead, kinds: list[str] | None = None) -> str:
                 else "proposed"
             )
             lines += [
-                f"### {case.title}",
+                f"{'#' * (level + 2)} {case.title}",
                 f"Category: {case.category} | Status: {status} "
                 f"| Executed: {case.executed}",
                 case.description,
@@ -416,10 +418,10 @@ def markdown(data: OperationsRead, kinds: list[str] | None = None) -> str:
                 f"| By: {case.executed_by or 'Not recorded'}",
             ]
     if "risks" in selected:
-        lines += ["## Risk register"]
+        lines += [f"{'#' * (level + 1)} Risk register"]
         for risk in data.risks:
             lines += [
-                f"### {risk.title}",
+                f"{'#' * (level + 2)} {risk.title}",
                 f"Category: {risk.category} | Status: {risk.status}",
                 risk.description,
                 f"Likelihood: {risk.likelihood} | Impact: {risk.impact} "
@@ -429,10 +431,10 @@ def markdown(data: OperationsRead, kinds: list[str] | None = None) -> str:
                 f"Rationale: {risk.rationale}",
             ]
     if "slos" in selected:
-        lines += ["## SLO suggestions"]
+        lines += [f"{'#' * (level + 1)} SLO suggestions"]
         for slo in data.slos:
             lines += [
-                f"### {slo.name}",
+                f"{'#' * (level + 2)} {slo.name}",
                 f"Status: {slo.status}",
                 f"SLI: {slo.sli}",
                 f"Target: {slo.target} | Window: {slo.window}",

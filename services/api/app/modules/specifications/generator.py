@@ -100,7 +100,9 @@ def template(kind: Kind, context: dict[str, Any]) -> list[dict[str, str]]:
     technologies = bullets(
         [f"{k}: {v}" for k, v in context.get("technologies", {}).items()]
     )
-    functional = [r for r in reqs if r["type"] == "functional"]
+    story_requirements = [
+        r for r in reqs if r["type"] == "functional" or r.get("priority") == "P0"
+    ]
     criteria = bullets(
         [f"{r['title']}: {c}" for r in reqs for c in r["acceptance_criteria"]]
     )
@@ -118,7 +120,7 @@ def template(kind: Kind, context: dict[str, Any]) -> list[dict[str, str]]:
             f"I want {r['title']}, "
             f"so that {r['description'] or 'TODO: define the benefit'}.\n"
             + bullets(r["acceptance_criteria"])
-            for r in functional
+            for r in story_requirements
         ]
     )
     layouts = {
@@ -135,6 +137,26 @@ def template(kind: Kind, context: dict[str, Any]) -> list[dict[str, str]]:
             ("Technologies", technologies),
             ("Requirements", scope),
             ("Constraints", bullets(answers.get("constraints", []))),
+            (
+                "Architecture overview",
+                "Separate presentation, domain rules and persistence.\n" + technologies,
+            ),
+            (
+                "Data model outline",
+                "Derive entities, ownership and retention from these requirements:\n"
+                + scope,
+            ),
+            (
+                "API outline",
+                "Define inputs, outputs, access control and error codes for:\n" + scope,
+            ),
+            (
+                "Security",
+                "Validate inputs and authorize per resource. Review constraints:\n"
+                + bullets(answers.get("constraints", [])),
+            ),
+            ("Deployment", plan_layouts(context)["deployment"][0][1]),
+            ("Observability", plan_layouts(context)["observability"][0][1]),
         ],
         "architecture": [
             ("System context", f"{name}\n{problem}\nUsers:\n{users}"),
@@ -273,10 +295,12 @@ def ordered(session: Session, project_id: object) -> list[Artefact]:
     return sorted(items, key=lambda a: (positions[a.kind], a.created_at, str(a.id)))
 
 
-def markdown(item: Artefact) -> str:
+def markdown(item: Artefact, *, level: int = 1) -> str:
     return (
-        f"# {item.title}\n\n"
-        + "\n\n".join(f"## {s['heading']}\n\n{s['body']}" for s in item.sections)
+        f"{'#' * level} {item.title}\n\n"
+        + "\n\n".join(
+            f"{'#' * (level + 1)} {s['heading']}\n\n{s['body']}" for s in item.sections
+        )
         + "\n"
     )
 

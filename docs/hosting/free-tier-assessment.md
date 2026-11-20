@@ -1,20 +1,30 @@
 # BuildWise: free-tier hosting feasibility
 
-**Verified on 2026-11-20.** Scope: blueprint sections 5, 11 and 12; Next.js, FastAPI, SQLAlchemy/Alembic, PostgreSQL and OpenTelemetry. This is a documentation assessment, not a successful deployment claim. Official pricing/docs were read through web search and page retrieval today; provider-hosted support replies are explicitly distinguished below. Quotas and eligibility can change. **Unverified** means the retrieved evidence did not settle the question, not that the feature is unavailable.
+**Provider terms reviewed on 2026-11-20.** Quotas and eligibility can change.
+Public plan terms are not an audit of billing settings for owner-provided accounts.
 
-## Verdict and recommended layout
+## Public demo budget
 
-**Yes, a low-traffic public MVP can plausibly run with zero mandatory paid services, conditionally on account approval, quotas and the deployment spike. It cannot promise always-on availability or guaranteed card-free signup.** No paid inference, paid collector, custom domain or paid database is necessary. This is a demo architecture, not a production reliability commitment; Render explicitly advises against production use of its free instances.
+The deployed layout requires **$0 in mandatory hosting and $0 in inference**
+within these limits. It is best effort, not a production availability commitment.
 
-Recommended starting layout:
+| Deployed dependency | Free-tier allowance and cost control |
+| --- | --- |
+| [Cloudflare Pages](https://developers.cloudflare.com/pages/platform/limits/) | Static export, no Workers or Functions, provider subdomain. Pages Free lists 500 builds/month; CI uploads a prebuilt bundle. |
+| [Render Free](https://render.com/docs/free) | One service; 750 instance-hours per workspace/month, spin-down after 15 idle minutes. A 31-day month kept warm can consume 744 hours. **Do not add a second service**; disable the keep-warm workflow if approaching quota. |
+| [Neon Free](https://neon.com/pricing) | One small PostgreSQL database; 1 GB and 100 CU-hours/project/month, compute wakes on first query after idle. Restrict usage rather than buying more capacity. |
+| [Grafana Cloud Free](https://grafana.com/pricing/) | 10k metric series and 50 GB/month each of logs and traces, with 14-day retention. Bound labels, sample traces and disable optional export if necessary. See the [runbook](../operations/observability.md#free-tier-budget). |
+| [GitHub Actions](https://docs.github.com/en/billing/concepts/product-billing/github-actions) | Standard hosted runners in a public repository; no larger runners. Short retention for failure artifacts. |
 
-1. **Next.js static export on Cloudflare Pages**, calling FastAPI from the browser. Keep SSR, Server Actions, server-dependent image optimization and Next.js API routes out of the initial frontend. This preserves Next.js/TypeScript without spending Workers CPU on rendering. Use the provider subdomain.
-2. **One Render Free web service for FastAPI**, with ordinary Python SQLAlchemy/psycopg and Alembic. Store no persistent state on its filesystem. Show an honest “API waking up” state and bounded retry instead of treating a cold start as data loss.
-3. **Supabase Free PostgreSQL**, accessed only from the API over TLS. Use its IPv4 shared session pooler if direct IPv6 connectivity is unavailable; keep the application pool small and use a migration-compatible session/direct connection for Alembic. Do not buy the IPv4 add-on merely to connect Render.
-4. **Grafana Cloud Free via OTLP/HTTPS directly from bounded, batching Python SDK exporters**. Keep exporter credentials server-side. A separate always-on collector is unnecessary for this demo; direct SDK export is officially documented for non-production use. Export failure must not prevent application startup or CRUD. Use bounded labels, redact user input and sample traces. Structured stdout alone does not deliver logs to Loki: configure and test the OTLP log exporter too.
-5. **GitHub Free public repository and standard hosted Linux Actions runners**. Keep artifact retention small and avoid paid larger runners. Never enable paid overages or silently upgrade plans. Keep Docker Compose as the reproducible local fallback, not a claim of free public hosting.
+No model API key, paid integration, domain, collector or higher service tier is
+needed or provisioned by the demo. Optional paid recommendations are descriptions,
+not enabled integrations. Do not enable automatic overages or an upgrade if a
+quota is reached. Preserve public health-only pages and use the local Compose
+setup if hosted telemetry or the public API is unavailable.
 
-If static export proves insufficient, spike **Next.js on Workers using OpenNext** before choosing SSR. If Supabase pausing is unacceptable, Neon is the first database alternative. If Render rejects the account or free outbound traffic pattern, there is **no verified unconditional, card-free drop-in API fallback** here: Koyeb requires a card and has signup billing risk; Python Workers needs a runtime compatibility spike. Escalate rather than introducing paid infrastructure.
+See the [deployment spike](deployment-spike-results.md#resources-plans-and-safety-controls)
+for separately verified resource settings and account-level unknowns. The rest
+of this assessment compares launch choices and fallback options.
 
 ## Primary providers
 
@@ -80,8 +90,10 @@ Card-free public Actions/account-specific verification is **unverified** in the 
 | **Fly.io** | [Trial](https://fly.io/docs/about/free-trial/): **$1 credit**, expires after **7 days** or consumption; up to **10 machines**, trial machines stop after **5 minutes running**. | No card for trial; **card required to continue when credit expires**. Commercial/hobby restriction unverified; [pricing](https://fly.io/docs/about/pricing/) is pay-as-you-go, not an ongoing general free tier. | Trial resource deletion possible without payment. The trial page mentions waiver of monthly bills **below $5** after adding a card; this is a conditional waiver, not a hard spend cap. Reject as a predictable zero-cost primary. |
 | **Vercel Hobby** | [Hobby docs](https://vercel.com/docs/plans/hobby): **100 GB fast data transfer**, **10 GB origin transfer**, **1 million invocations**, **4 CPU-hours**, **360 GB-hours provisioned memory**, generally monthly. | Free. No-card signup is **unverified** in retrieved official docs. Official search result for [fair-use guidelines](https://vercel.com/docs/limits/fair-use-guidelines.md) explicitly says **non-commercial personal use only**, commercial use requires Pro/Enterprise. However today's fetched full text omitted this paragraph: treat current enforceable commercial eligibility as **unverified/conflicting evidence** and do not approve BuildWise commercial use without confirmation. | Static CDN/request-driven functions; no Render-style inactivity timeout verified. Most exhausted Hobby features require waiting **30 days** per Hobby docs. Next.js-friendly fallback for an eligible personal demo only; paid development/consulting can raise commercial eligibility concerns. |
 
-## Deployment gate and unresolved verification
+## Unresolved provider checks
 
-Before building the full product, execute the blueprint's deployment spike: frontend, API `/health` and `/ready`, actual PostgreSQL TLS connection and migration, browser CORS, and a trace/metric/log visible in Grafana. Measure a real Render cold start and DB resume; confirm the actual account regions and quotas in each dashboard. Use synthetic non-sensitive data and verify no payment subscription/overage is enabled.
-
-Still **unverified**: actual account/card eligibility (especially Supabase and Render), regional signup capacity, Render numeric bandwidth/build allowances, Python Workers' explicit GA/beta status and complete BuildWise/Alembic/OTel compatibility, dynamic Next.js CPU fit, Grafana inactivity and ingestion-reset policy/tenant endpoint, GitHub card checks, and commercial eligibility where noted (Vercel search/full-page inconsistency in particular). No signup, deployment, migration, cold-start measurement or telemetry ingestion test was performed for this assessment. None of these should be marked as a passed deployment spike.
+Potential fallback account/card eligibility, regional signup capacity, Python
+Workers compatibility with the full stack, and commercial eligibility of some
+personal tiers remain unverified. There is no verified unconditional,
+card-free, drop-in API fallback. Recheck actual billing/quotas in provider
+dashboards before changing hosting; do not make a paid change to restore service.

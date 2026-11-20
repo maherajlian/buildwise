@@ -1,7 +1,14 @@
 import { afterEach, describe, it, expect } from "vitest";
-import { getProjectToken } from "@/lib/token";
+import { getProjectToken, readProjectToken } from "@/lib/token";
 afterEach(() => localStorage.clear());
 describe("browser project token", () => {
+  it("does not create a token when browsing anonymously", () => {
+    expect(readProjectToken()).toBeUndefined();
+    expect(localStorage.length).toBe(0);
+    expect(readProjectToken).not.toThrow();
+    const token = getProjectToken();
+    expect(readProjectToken()).toBe(token);
+  });
   it("generates and persists 32 random bytes as base64url", () => {
     const first = getProjectToken();
     expect(first).toMatch(/^[A-Za-z0-9_-]{43}$/);

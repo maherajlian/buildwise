@@ -40,9 +40,11 @@ const TEST_STATUSES: Record<NonNullable<TestCase["status"]>, string> = {
 export function OperationsPanel({
   projectId,
   readOnly,
+  testingOnly = false,
 }: {
   projectId: string;
   readOnly: boolean;
+  testingOnly?: boolean;
 }) {
   const [data, setData] = useState<Operations>();
   const [error, setError] = useState<ApiError>();
@@ -134,7 +136,7 @@ export function OperationsPanel({
       <header className="tech-title">
         <div>
           <div className="eyebrow">VALIDATE · RELEASE · OPERATE</div>
-          <h2>Validate &amp; Operate</h2>
+          <h2>{testingOnly ? "Testing" : "Validate & Operate"}</h2>
           <p className="tech-muted">
             Plans are generated deterministically from this project&apos;s
             requirements. Tests listed as proposed have not been run.
@@ -353,6 +355,7 @@ export function OperationsPanel({
             )}
           </section>
           <section
+            hidden={testingOnly}
             aria-labelledby="risks-heading"
             className="operations-section"
             id="operations-risks"
@@ -471,6 +474,7 @@ export function OperationsPanel({
             )}
           </section>
           <section
+            hidden={testingOnly}
             aria-labelledby="slos-heading"
             className="operations-section"
             id="operations-slos"
@@ -565,6 +569,7 @@ export function OperationsPanel({
         </>
       )}
       <section
+        hidden={testingOnly}
         className="panel tech-panel operations-section"
         aria-labelledby="release-plans"
       >

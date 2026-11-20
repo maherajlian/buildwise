@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApiStatus } from "@/components/api-status";
+import { RecentProjects } from "@/components/recent-projects";
 export default function Dashboard() {
   return (
     <>
@@ -21,7 +22,8 @@ export default function Dashboard() {
         <div>
           <h1>Build with a clearer picture.</h1>
           <p>
-            Turn your next idea into a plan you can explain, build and operate.
+            Turn an idea into a project brief, architecture, specs and a delivery
+            plan. BuildWise uses templates and rules, not an AI model.
           </p>
         </div>
         <Button asChild>
@@ -35,27 +37,25 @@ export default function Dashboard() {
       <section className="hero-card">
         <div className="hero-copy">
           <span className="hero-label">
-            <span className="dot" />A BETTER STARTING POINT
+            <span className="dot" /> PUBLIC DEMO · NO ACCOUNT NEEDED
           </span>
           <h2>
-            Good software starts
-            <br />
-            before the first line of code.
+            Explore a restaurant booking project.
           </h2>
           <p>
-            Clarify the problem. Explore the trade-offs.
-            <br />
-            Build a practical path from idea to deployment.
+            Follow a fictional, read-only project from discovery to test and
+            deployment plans. See why the stack was chosen and download the
+            complete project pack.
           </p>
           <Button asChild>
-            <Link href="/projects/">
-              Start a project
+            <Link href="/projects/view/?id=sample">
+              Open sample project
               <ArrowRight size={16} />
             </Link>
           </Button>
-          <span className="hero-footnote">
-            No prompts. No black boxes. Just a thoughtful process.
-          </span>
+          <Link className="hero-footnote" href="/guides/#walkthrough">
+            Read the demo walkthrough →
+          </Link>
         </div>
         <div className="blueprint-art" aria-hidden="true">
           <span className="diagram-kicker">THE BUILDWISE PATH</span>
@@ -87,6 +87,7 @@ export default function Dashboard() {
           </div>
         </div>
       </section>
+      <RecentProjects />
       <section aria-label="Workspace summary" className="summary-grid">
         {[
           {
@@ -105,13 +106,13 @@ export default function Dashboard() {
             icon: ListChecks,
             label: "Delivery plans",
             text: "A practical next step",
-            href: "/guides/",
+            href: "/projects/view/?id=sample&tab=plan",
           },
           {
             icon: FileText,
             label: "Specifications",
             text: "Clarity you can share",
-            href: "/docs/",
+            href: "/projects/view/?id=sample&tab=specs",
           },
         ].map(({ icon: Icon, ...item }) => (
           <Link key={item.label} href={item.href} className="summary-card">
@@ -162,9 +163,9 @@ export default function Dashboard() {
       <div className="foundation-note">
         <span className="dot" />
         <p>
-          <strong>A foundation, not a finished product.</strong> Projects,
-          guided discovery and requirements are live. Recommendations and
-          planning are coming in later phases.
+          <strong>Use synthetic data in this demo.</strong> Your browser owns
+          its projects. There is no sign-in or recovery if you clear browser
+          storage; export a Markdown pack to keep a copy.
         </p>
       </div>
     </>

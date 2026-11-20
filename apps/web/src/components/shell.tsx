@@ -92,7 +92,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </main>
         <footer className="page-footer">
           BuildWise <span>From a good idea to a well-built system.</span>
-          <span className="ml-auto">Foundation · v0.1</span>
+          <span className="ml-auto">Public demo</span>
         </footer>
       </div>
     </div>
