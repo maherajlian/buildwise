@@ -276,10 +276,7 @@ def test_rules_are_observed_without_business_decorator(
             )
         body = {"kind": "adr", "title": "Decision"} if path == "/artefacts" else {}
         if scenario == "error":
-            with patch(
-                "app.modules.recommendations.engine.hashlib.sha256",
-                side_effect=ValueError,
-            ):
+            with patch("app.modules.recommendations.engine.CATEGORIES", None):
                 response = client.post(base + path, headers=headers, json=body)
             assert response.status_code == 500
         else:
@@ -289,7 +286,7 @@ def test_rules_are_observed_without_business_decorator(
         assert len(rules) == 1
         assert rules[0].parent is not None
         if scenario == "error":
-            assert rules[0].attributes["error.type"] == "ValueError"
+            assert rules[0].attributes["error.type"] == "TypeError"
         data = reader.get_metrics_data()
         assert data is not None
         points = [
