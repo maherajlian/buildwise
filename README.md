@@ -69,3 +69,12 @@ created from 32 cryptographically random bytes and sent only in `X-Project-Token
 See [architecture](docs/architecture/system-design.md),
 [hosting assessment](docs/hosting/free-tier-assessment.md), and
 [implementation plan](docs/plan/implementation-proposal.md).
+
+## Contributing and CI
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for branching, required checks and the
+Definition of Done, and [requirement traceability](docs/specs/traceability.md) for
+test coverage and known gaps. [CI](.github/workflows/ci.yml) checks the API, web,
+real-stack E2E flow and no-paid-AI policy on PRs and pushes to `main`.
+Dependencies are reviewed weekly with Dependabot. Deployment automation is not
+included yet. Licensed under [MIT](LICENSE).
