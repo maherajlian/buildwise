@@ -72,6 +72,13 @@ def test_correlation(client: TestClient) -> None:
     )
 
 
+def test_method_not_allowed_header(client: TestClient) -> None:
+    response = client.post("/health")
+    assert response.status_code == 405
+    assert "GET" in response.headers["allow"].split(", ")
+    assert_error(response)
+
+
 def test_body_limit(client: TestClient) -> None:
     for content in [b"x" * (256 * 1024 + 1), iter([b"x" * 200000, b"x" * 100000])]:
         response = client.post("/api/v1/projects", content=content)

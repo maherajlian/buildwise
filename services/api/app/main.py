@@ -50,6 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         message = str(exc.detail) if exc.status_code < 500 else "Service unavailable"
         return JSONResponse(
             status_code=exc.status_code,
+            headers=exc.headers,
             content={
                 "error": {
                     "code": "database_unavailable"
