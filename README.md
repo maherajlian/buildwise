@@ -70,6 +70,32 @@ See [architecture](docs/architecture/system-design.md),
 [hosting assessment](docs/hosting/free-tier-assessment.md), and
 [implementation plan](docs/plan/implementation-proposal.md).
 
+## Operations: optional keep-warm ping
+
+[Keep API warm](.github/workflows/keep-warm.yml) requests `/health` every ten
+minutes once merged into the default branch, or through `workflow_dispatch`.
+Set the Actions repository variable `API_BASE_URL` to override the default
+`https://buildwise-api-p4yq.onrender.com` (public URL, not a secret). The single
+step retries until HTTP **200**, with a shared approximately 90-second request
+and retry budget; it fails if the API never becomes healthy. The job has a
+five-minute timeout, uses a standard Ubuntu runner, and requests no token
+permissions. `/health` does not query Neon, so this does not keep the database
+awake or verify database readiness.
+
+This intentionally attempts to prevent Render's idle sleep. In a 31-day month,
+one always-on service consumes approximately **744 of the workspace's 750 free
+instance-hours**, leaving only six hours. A second always-on Render service
+would exhaust the shared quota (approximately 1,488 hours total). Reassess usage
+before adding another service; never upgrade or add a payment method to make
+this ping work. The workflow itself does not change Render's Free plan.
+
+[GitHub schedules](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)
+can be delayed or skipped under load; this is not an availability guarantee.
+Scheduled workflows in public repositories automatically disable after **60
+days without repository activity**. Check Actions and re-enable if necessary,
+or disable the workflow intentionally to conserve Render hours. Pushing this
+feature branch alone does not activate its schedule.
+
 ## Contributing and CI
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for branching, required checks and the

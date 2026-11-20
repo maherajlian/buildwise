@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Activity, ArrowRight, RefreshCw } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -22,61 +22,107 @@ export function ApiStatus({
 }) {
   const [state, setState] = useState<ServiceState>("checking");
   const [error, setError] = useState<ApiError>();
-  const [round, setRound] = useState(0);
+  const recheck = useRef(() => {});
   useEffect(() => {
     let disposed = false;
-    const lifecycle = new AbortController();
-    const active = new Set<AbortController>();
-    async function run() {
-      for (let attempt = 0; attempt < attempts; attempt++) {
-        const controller = new AbortController();
-        active.add(controller);
-        const timer = setTimeout(() => controller.abort(), timeoutMs);
-        try {
-          await Promise.all([
-            api.health(controller.signal),
-            api.ready(controller.signal),
-          ]);
-          if (!disposed) {
-            setState("ready");
-            setError(undefined);
-          }
-          return;
-        } catch (cause) {
-          if (disposed) return;
-          setError(
-            cause instanceof ApiError
-              ? cause
-              : new ApiError("Cannot reach the API."),
-          );
-          setState(attempt === attempts - 1 ? "unavailable" : "waking");
-        } finally {
-          clearTimeout(timer);
-          controller.abort();
-          active.delete(controller);
+    let attempt = 0;
+    let revision = 0;
+    let inFlight = false;
+    let resumeWhenSettled = false;
+    let active: AbortController | undefined;
+    let scheduled: ReturnType<typeof setTimeout> | undefined;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+
+    function schedule(delay: number) {
+      clearTimeout(scheduled);
+      if (!disposed && !document.hidden)
+        scheduled = setTimeout(() => void probe(), delay);
+    }
+
+    async function probe() {
+      if (disposed || document.hidden || inFlight) return;
+      inFlight = true;
+      const startedRevision = revision;
+      const controller = new AbortController();
+      active = controller;
+      timeout = setTimeout(() => controller.abort(), timeoutMs);
+      const results = await Promise.allSettled([
+        api.health(controller.signal),
+        api.ready(controller.signal),
+      ]);
+      clearTimeout(timeout);
+      controller.abort();
+      active = undefined;
+      inFlight = false;
+      if (disposed) return;
+      if (startedRevision !== revision) {
+        if (resumeWhenSettled && !document.hidden) {
+          resumeWhenSettled = false;
+          void probe();
         }
-        if (attempt < attempts - 1)
-          await new Promise<void>((resolve) => {
-            const pause = setTimeout(resolve, retryMs);
-            lifecycle.signal.addEventListener(
-              "abort",
-              () => {
-                clearTimeout(pause);
-                resolve();
-              },
-              { once: true },
-            );
-          });
-        if (disposed) return;
+        return;
+      }
+      const failure = results.find((result) => result.status === "rejected");
+      if (!failure) {
+        setState("ready");
+        setError(undefined);
+        attempt = 0;
+        schedule(30000);
+      } else {
+        const cause: unknown = failure.reason;
+        setError(
+          cause instanceof ApiError
+            ? cause
+            : new ApiError("Cannot reach the API."),
+        );
+        attempt++;
+        const exhausted = attempt >= attempts;
+        setState(exhausted ? "unavailable" : "waking");
+        if (exhausted) attempt = 0;
+        schedule(exhausted ? 30000 : retryMs);
       }
     }
-    void run();
+
+    function checkNow() {
+      if (document.hidden || disposed) return;
+      if (inFlight) {
+        if (active?.signal.aborted) resumeWhenSettled = true;
+        return;
+      }
+      clearTimeout(scheduled);
+      attempt = 0;
+      void probe();
+    }
+
+    function visibilityChanged() {
+      if (document.hidden) {
+        revision++;
+        attempt = 0;
+        resumeWhenSettled = false;
+        clearTimeout(scheduled);
+        clearTimeout(timeout);
+        active?.abort();
+      } else checkNow();
+    }
+
+    recheck.current = () => {
+      if (document.hidden || inFlight) return;
+      setState("checking");
+      setError(undefined);
+      checkNow();
+    };
+    document.addEventListener("visibilitychange", visibilityChanged);
+    window.addEventListener("focus", checkNow);
+    checkNow();
     return () => {
       disposed = true;
-      lifecycle.abort();
-      active.forEach((controller) => controller.abort());
+      clearTimeout(scheduled);
+      clearTimeout(timeout);
+      active?.abort();
+      document.removeEventListener("visibilitychange", visibilityChanged);
+      window.removeEventListener("focus", checkNow);
     };
-  }, [attempts, retryMs, timeoutMs, round]);
+  }, [attempts, retryMs, timeoutMs]);
   return (
     <section className="status-panel" aria-label="API status">
       <div className="flex items-center gap-3">
@@ -89,7 +135,7 @@ export function ApiStatus({
             {state === "ready"
               ? "API responding · Database connected"
               : state === "unavailable"
-                ? "Automatic retries stopped. Your work has not been changed."
+                ? "Will re-check automatically while this page is visible. Your work has not been changed."
                 : "Free tier can take ~1 min. Retrying automatically with a fixed limit."}
           </p>
           {state === "unavailable" && error && (
@@ -103,15 +149,7 @@ export function ApiStatus({
         </div>
       </div>
       {state === "unavailable" ? (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setState("checking");
-            setError(undefined);
-            setRound((value) => value + 1);
-          }}
-        >
+        <Button variant="outline" size="sm" onClick={() => recheck.current()}>
           <RefreshCw size={14} />
           Retry
         </Button>
