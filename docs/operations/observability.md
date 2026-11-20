@@ -143,8 +143,12 @@ errors produce Error state. Missing telemetry is not an independent uptime SLA.
 | DB unavailable | >=3 `/ready` 503s/5m; >=5 ready probes/5m | 2m |
 | Operation errors | >=5 operation errors/5m; >=20 requests/5m | 2m |
 
-Availability is **non-5xx request percentage**, not wall-clock uptime. Health
-alerting requires regular probes and a prior traffic baseline; long-total outages
+Availability is **non-5xx request percentage**, not wall-clock uptime. Availability
+and error ratios use zero defaults for missing outcome series. With no observed
+requests the dashboard reports 0% availability (not evidence of downtime); all-5xx
+traffic also reports 0%. Healthy traffic without any 5xx reports a 0% error ratio.
+Alert queries return zero when inputs are absent, retaining their traffic guards.
+Health alerting requires regular probes and a prior traffic baseline; long-total outages
 eventually age out of the 1h guard. Use an external uptime monitor for production
 black-box coverage. Low traffic deliberately suppresses these demo alerts.
 

@@ -304,7 +304,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(increase(http_server_requests_total{job=\"$service\",http_route=\"/ready\",http_response_status_code=\"503\"}[$__range]))",
+          "expr": "sum(increase(http_server_requests_total{job=\"$service\",http_route=\"/ready\",http_response_status_code=\"503\"}[$__range])) or vector(0)",
           "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
         }
       ]

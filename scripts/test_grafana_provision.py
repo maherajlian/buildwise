@@ -15,6 +15,28 @@ from grafana_provision import (
 
 
 class ProvisionTests(unittest.TestCase):
+    def test_error_queries_have_zero_defaults_and_keep_traffic_guards(self):
+        dashboard = json.loads(
+            (ROOT / "infra/grafana/dashboards/service-overview.json").read_text()
+        )
+        for panel_id in (2, 6):
+            panel = next(p for p in dashboard["panels"] if p["id"] == panel_id)
+            query = panel["targets"][0]["expr"]
+            self.assertEqual(query.count("or vector(0)"), 2)
+            self.assertIn("clamp_min", query)
+        rules = json.loads((ROOT / "infra/grafana/alerts/buildwise.yaml").read_text())[
+            "groups"
+        ][0]["rules"]
+        for rule in rules:
+            query = rule["data"][0]["model"]["expr"]
+            self.assertTrue(query.endswith("or vector(0)"))
+            self.assertIn(
+                ">= bool 5"
+                if rule["uid"] == "buildwise-db-unavailable"
+                else ">= bool 20",
+                query,
+            )
+
     def setUp(self):
         self.sources = [
             {"type": kind, "name": "Cloud " + kind, "uid": "cloud-" + kind}

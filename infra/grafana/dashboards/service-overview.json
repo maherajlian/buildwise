@@ -140,7 +140,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(rate(http_server_requests_total{job=\"$service\",http_response_status_code=~\"5..\"}[$__rate_interval])) / clamp_min(sum(rate(http_server_requests_total{job=\"$service\"}[$__rate_interval])), 0.000001)",
+          "expr": "(sum(rate(http_server_requests_total{job=\"$service\",http_response_status_code=~\"5..\"}[$__rate_interval])) or vector(0)) / clamp_min((sum(rate(http_server_requests_total{job=\"$service\"}[$__rate_interval])) or vector(0)), 0.000001)",
           "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
         }
       ]
@@ -304,7 +304,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "100 * sum(increase(http_server_requests_total{job=\"$service\",http_response_status_code!~\"5..\"}[$__range])) / clamp_min(sum(increase(http_server_requests_total{job=\"$service\"}[$__range])), 1)",
+          "expr": "100 * (sum(increase(http_server_requests_total{job=\"$service\",http_response_status_code!~\"5..\"}[$__range])) or vector(0)) / clamp_min((sum(increase(http_server_requests_total{job=\"$service\"}[$__range])) or vector(0)), 0.000001)",
           "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
         }
       ]

@@ -32,7 +32,7 @@
               "datasourceUid": "prometheus",
               "model": {
                 "refId": "A",
-                "expr": "(sum(rate(http_server_requests_total{job=\"buildwise-api\",http_response_status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(http_server_requests_total{job=\"buildwise-api\"}[5m])), 0.000001) > bool 0.05) * (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[5m])) >= bool 20)",
+                "expr": "(((sum(rate(http_server_requests_total{job=\"buildwise-api\",http_response_status_code=~\"5..\"}[5m])) or vector(0)) / clamp_min((sum(rate(http_server_requests_total{job=\"buildwise-api\"}[5m])) or vector(0)), 0.000001) > bool 0.05) * (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[5m])) >= bool 20)) or vector(0)",
                 "instant": true,
                 "intervalMs": 1000,
                 "maxDataPoints": 43200,
@@ -105,7 +105,7 @@
               "datasourceUid": "prometheus",
               "model": {
                 "refId": "A",
-                "expr": "(histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"buildwise-api\"}[5m]))) > bool 1) * (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[5m])) >= bool 20)",
+                "expr": "((histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"buildwise-api\"}[5m]))) > bool 1) * (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[5m])) >= bool 20)) or vector(0)",
                 "instant": true,
                 "intervalMs": 1000,
                 "maxDataPoints": 43200,
@@ -178,7 +178,7 @@
               "datasourceUid": "prometheus",
               "model": {
                 "refId": "A",
-                "expr": "(absent_over_time(http_server_requests_total{job=\"buildwise-api\",http_route=\"/health\",http_response_status_code=\"200\"}[10m]) or (sum(increase(http_server_requests_total{job=\"buildwise-api\",http_route=\"/health\",http_response_status_code=\"200\"}[10m])) < bool 1)) * on() (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[1h])) >= bool 20)",
+                "expr": "((absent_over_time(http_server_requests_total{job=\"buildwise-api\",http_route=\"/health\",http_response_status_code=\"200\"}[10m]) or (sum(increase(http_server_requests_total{job=\"buildwise-api\",http_route=\"/health\",http_response_status_code=\"200\"}[10m])) < bool 1)) * on() (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[1h])) >= bool 20)) or vector(0)",
                 "instant": true,
                 "intervalMs": 1000,
                 "maxDataPoints": 43200,
@@ -251,7 +251,7 @@
               "datasourceUid": "prometheus",
               "model": {
                 "refId": "A",
-                "expr": "(sum(increase(http_server_requests_total{job=\"buildwise-api\",http_route=\"/ready\",http_response_status_code=\"503\"}[5m])) >= bool 3) * (sum(increase(http_server_requests_total{job=\"buildwise-api\",http_route=\"/ready\"}[5m])) >= bool 5)",
+                "expr": "((sum(increase(http_server_requests_total{job=\"buildwise-api\",http_route=\"/ready\",http_response_status_code=\"503\"}[5m])) >= bool 3) * (sum(increase(http_server_requests_total{job=\"buildwise-api\",http_route=\"/ready\"}[5m])) >= bool 5)) or vector(0)",
                 "instant": true,
                 "intervalMs": 1000,
                 "maxDataPoints": 43200,
@@ -324,7 +324,7 @@
               "datasourceUid": "prometheus",
               "model": {
                 "refId": "A",
-                "expr": "(sum(increase(buildwise_operation_errors_total{job=\"buildwise-api\"}[5m])) >= bool 5) * (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[5m])) >= bool 20)",
+                "expr": "((sum(increase(buildwise_operation_errors_total{job=\"buildwise-api\"}[5m])) >= bool 5) * (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[5m])) >= bool 20)) or vector(0)",
                 "instant": true,
                 "intervalMs": 1000,
                 "maxDataPoints": 43200,
