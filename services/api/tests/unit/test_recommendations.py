@@ -240,6 +240,33 @@ def test_integration_intent_is_detected(text: str, kind: str) -> None:
     assert integrations.evidence[0].excerpt == text
 
 
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "This MVP does not have a flexible budget",
+        "This MVP has no flexible budget",
+        "This MVP is without a flexible budget",
+        "This MVP isn't on an unlimited budget",
+        "This MVP doesn't have a flexible budget",
+        "For this MVP we don't have a flexible budget",
+    ],
+)
+def test_negated_budget_does_not_override_mvp(phrase: str) -> None:
+    signals, _ = derive_signals({"constraints": [phrase]}, [], Overrides())
+    budget = next(s for s in signals if s.id == "budget")
+    assert (budget.value, budget.source) == ("low", "detected")
+
+
+def test_budget_detection_continues_after_a_negated_match() -> None:
+    signals, _ = derive_signals(
+        {"constraints": ["Not a flexible budget today. Next year: flexible budget."]},
+        [],
+        Overrides(),
+    )
+    budget = next(s for s in signals if s.id == "budget")
+    assert (budget.value, budget.source) == ("flexible", "detected")
+
+
 def test_long_evidence_keeps_matched_phrase() -> None:
     signals, _ = derive_signals(
         {"constraints": ["Context " * 80 + "low budget"]}, [], Overrides()

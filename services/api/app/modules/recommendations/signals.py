@@ -55,6 +55,11 @@ PATTERNS: dict[str, dict[str, str]] = {
     },
 }
 AI_PATTERN = r"AI|machine learning|language model|LLM|generative"
+NEGATED_PREFIX = re.compile(
+    r"\b(?:not|no|without|isn't|doesn't|don't|isn’t|doesn’t|don’t)"
+    r"(?:\s+\w+){0,3}\s*$",
+    re.I,
+)
 
 
 def derive_signals(
@@ -91,7 +96,15 @@ def derive_signals(
         for value, pattern in PATTERNS.get(key, {}).items():
             matches = []
             for field, text in texts:
-                match = re.search(r"\b(?:" + pattern + r")\b", text, re.I)
+                match = next(
+                    (
+                        m
+                        for m in re.finditer(r"\b(?:" + pattern + r")\b", text, re.I)
+                        if key != "budget"
+                        or not NEGATED_PREFIX.search(text[: m.start()])
+                    ),
+                    None,
+                )
                 if match:
                     start = max(0, match.start() - 80)
                     matches.append(
