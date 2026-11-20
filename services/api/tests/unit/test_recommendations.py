@@ -207,7 +207,10 @@ def test_explicit_budget_phrases_win_over_mvp(phrase: str, expected: str) -> Non
     assert any(phrase in e.excerpt for e in budget.evidence)
 
 
-@pytest.mark.parametrize("text", ["Refunds within 30 calendar days", "Column mapping"])
+@pytest.mark.parametrize(
+    "text",
+    ["Refunds within 30 calendar days", "Column mapping", "Onboarding directions"],
+)
 def test_nonintegration_calendar_and_mapping_are_ignored(text: str) -> None:
     signals, _ = derive_signals({"goals": [text]}, [], Overrides())
     integrations = next(s for s in signals if s.id == "integrations")
@@ -233,7 +236,8 @@ def test_nonintegration_calendar_and_mapping_are_ignored(text: str) -> None:
         ("Map view", "maps"),
         ("Geolocation", "maps"),
         ("Geocoding", "maps"),
-        ("Directions", "maps"),
+        ("Driving directions", "maps"),
+        ("Turn-by-turn navigation", "maps"),
     ],
 )
 def test_integration_intent_is_detected(text: str, kind: str) -> None:

@@ -51,7 +51,7 @@ PATTERNS: dict[str, dict[str, str]] = {
             r"|calendar (?:sync\w*|integration\w*|invite\w*|export\w*)"
             r"|ical(?:endar)?|calendly|caldav"
         ),
-        "maps": r"maps|map view|geolocation|geocod\w*|directions",
+        "maps": r"maps|map view|geolocation|geocod\w*|driving directions|turn-by-turn",
         "generic_api": r"external API|third.party API|webhook|webhooks",
     },
 }
