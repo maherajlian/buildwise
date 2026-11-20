@@ -220,6 +220,10 @@ def test_nonintegration_calendar_and_mapping_are_ignored(text: str) -> None:
     ("text", "kind"),
     [
         ("Google Calendar", "calendar"),
+        ("Outlook Calendar", "calendar"),
+        ("Apple Calendar", "calendar"),
+        ("Calendly", "calendar"),
+        ("CalDAV", "calendar"),
         ("Calendar sync", "calendar"),
         ("Calendar integration", "calendar"),
         ("Calendar invites", "calendar"),
