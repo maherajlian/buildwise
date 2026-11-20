@@ -21,14 +21,25 @@ import {
 import { DiscoveryWizard } from "@/components/discovery";
 import { Requirements } from "@/components/requirements";
 import { Architecture } from "@/components/architecture";
+import { Specifications } from "@/components/specifications";
+import { BuildPlan } from "@/components/build-plan";
 
-const TABS = ["overview", "discovery", "requirements", "architecture"] as const;
+const TABS = [
+  "overview",
+  "discovery",
+  "requirements",
+  "architecture",
+  "specs",
+  "plan",
+] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, string> = {
   overview: "Overview",
   discovery: "Discovery",
   requirements: "Requirements",
   architecture: "Architecture",
+  specs: "Specs",
+  plan: "Plan",
 };
 const STEP_LABELS: Record<string, string> = {
   problem: "Problem",
@@ -186,6 +197,12 @@ export function Workspace() {
         )}
         {tab === "architecture" && (
           <Architecture projectId={project.id} readOnly={readOnly} />
+        )}
+        {tab === "specs" && (
+          <Specifications projectId={project.id} readOnly={readOnly} />
+        )}
+        {tab === "plan" && (
+          <BuildPlan projectId={project.id} readOnly={readOnly} />
         )}
       </div>
     </>

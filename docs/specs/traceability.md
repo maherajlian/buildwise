@@ -1,4 +1,4 @@
-# Requirement traceability (through Phase 3)
+# Requirement traceability (through Phase 4 backend)
 
 Scope: the foundation API, static frontend and CI. References below are executable
 test names, not claims that an entire product requirement is complete. Requirements
@@ -15,6 +15,9 @@ Test path abbreviations:
 
 | Requirement | Tests / automated checks | Coverage and remaining gaps |
 |---|---|---|
+| Specify — editable specifications and Markdown | `tests/unit/test_phase4_generators.py` templates/context/Markdown tests; `tests/integration/test_phase4.py::test_specifications_generation_edit_adr_export` (API) | 13 deterministic context-preserving document kinds; edited content survives regeneration; ADR creation; all sections exported. Backend only; specification editor UI remains future work. |
+| Build — planning and dependencies | API unit `test_dependency_validation_empty_normal_and_error_cases`, `test_plan_markdown_complete`; integration `test_plan_generation_context_deterministic_and_export`, `test_plan_crud_dependency_validation` | Epics/tasks with priority, workflow, skill, notes, criteria and statuses; unknown/self/cycle/status gating; dependency cleanup; Markdown. Planning only, not execution or inference. No task UI yet. |
+| Phase 4 access and sample | API integration `test_phase4_auth_and_foreign_references`, `test_phase4_empty_sample_and_cascade` | Owner isolation, public read-only seeded artefacts/plan, empty-context TODOs, migration drift fixture and project cascade. |
 | FR-005 — deterministic recommendations | API unit `test_default_rules_every_category`, `test_jobs_and_data_rules`, `test_kubernetes_requires_scale_and_operators`, `test_reproducible_no_network`; integration `test_recommendation_endpoints`; Web `architecture.test.tsx`; E2E `architecture.spec.ts` | Ten categories, deterministic scores/ties/fingerprint, reasons/evidence, alternatives and trade-offs; no network during generation. Architecture tab explains matched rules, evidence and alternatives, with editable owner overrides. |
 | FR-006 — versioned catalogue | API unit `test_catalogue_schema_and_references`, `test_catalogue_fails_fast` | 30 entries in API package, JSON Schema validation in pytest/CI, Pydantic startup validation, review dates and rule-reference checks. Pricing claims require verification. |
 | FR-007 — optional AI | API unit `test_ai_is_only_explicit_and_word_boundaries`; integration `test_recommendation_endpoints`; Web `architecture.test.tsx`; E2E `architecture.spec.ts` | Default/detected AI is not recommended; explicit required enables optional cost-dependent candidates, never calls a model. Architecture and catalogue label AI as optional and potentially costly. |
