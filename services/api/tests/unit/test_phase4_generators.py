@@ -5,9 +5,16 @@ import pytest
 from pydantic import ValidationError
 
 from app.modules.planning.models import PlanTask
-from app.modules.planning.schemas import EpicRead, PlanRead, TaskRead, Validation
+from app.modules.planning.schemas import (
+    EpicRead,
+    PlanRead,
+    TaskCreate,
+    TaskEdit,
+    TaskRead,
+    Validation,
+)
+from app.modules.planning.service import bounded_criteria, task_notes, validation_errors
 from app.modules.planning.service import markdown as plan_markdown
-from app.modules.planning.service import task_notes, validation_errors
 from app.modules.projects.models import Project
 from app.modules.specifications.generator import TITLES, export, markdown, template
 from app.modules.specifications.models import Artefact
@@ -202,3 +209,23 @@ def test_task_notes_are_scoped_bullets_with_missing_context_placeholders() -> No
     assert "TODO: review Deployment plan" in empty
     assert "TODO: select technology" in empty
     assert all(line.startswith("- ") for line in empty.splitlines())
+
+
+@pytest.mark.parametrize("count", [0, 1, 20, 21, 40])
+@pytest.mark.parametrize("length", [1, 1000, 1001])
+def test_generated_criteria_fit_create_and_edit_limits(count: int, length: int) -> None:
+    criteria = [str(i % 10) * length for i in range(count)]
+    result = bounded_criteria(criteria)
+    assert result == bounded_criteria(criteria)
+    assert criteria == [str(i % 10) * length for i in range(count)]
+    TaskCreate(title="Generated task", acceptance_criteria=result)
+    TaskEdit(acceptance_criteria=result)
+    assert len(result) == min(count, 20)
+    if count > 20:
+        assert result[-1] == (
+            f"…and {count - 19} more, see Acceptance criteria artefact"
+        )
+    else:
+        assert result == [
+            item[:999] + "…" if length > 1000 else item for item in criteria
+        ]

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.settings import Settings
 from app.main import create_app
+from app.modules.planning.schemas import TaskCreate
 from app.modules.projects.access import SAMPLE_PROJECT_ID
 from app.modules.projects.sample import seed_sample
 from app.modules.specifications.schemas import KINDS
@@ -258,6 +259,57 @@ def test_plan_generation_context_deterministic_and_export(client: TestClient) ->
             *task["acceptance_criteria"],
         ]:
             assert value in exported.text
+
+
+@pytest.mark.parametrize("count", [1, 21])
+def test_generated_quality_task_can_be_edited_with_long_criteria(
+    client: TestClient, count: int
+) -> None:
+    owner = token()
+    base = project(client, owner)
+    for index in range(count):
+        response = client.post(
+            base + "/requirements",
+            headers=owner,
+            json={
+                "type": "non_functional",
+                "title": f"Budget {index:02}",
+                "acceptance_criteria": ["x" * 1000],
+            },
+        )
+        assert response.status_code == 201, response.text
+    generated = client.post(base + "/plan/generate", headers=owner, json={})
+    assert generated.status_code == 200, generated.text
+    tasks = generated.json()["tasks"]
+    for task in tasks:
+        TaskCreate.model_validate(
+            {
+                key: value
+                for key, value in task.items()
+                if key in TaskCreate.model_fields
+            }
+        )
+    quality = next(t for t in tasks if t["title"] == "Verify quality and security")
+    criteria = quality["acceptance_criteria"]
+    assert len(criteria) == min(count, 20)
+    assert len(criteria[0]) == 1000
+    if count > 20:
+        assert criteria[-1] == "…and 2 more, see Acceptance criteria artefact"
+    payload = {
+        key: quality[key]
+        for key in [
+            "priority",
+            "depends_on",
+            "implementation_notes",
+            "acceptance_criteria",
+        ]
+    }
+    payload["title"] = "Reviewed quality checks"
+    updated = client.patch(
+        base + "/plan/tasks/" + quality["id"], headers=owner, json=payload
+    )
+    assert updated.status_code == 200, updated.text
+    assert updated.json()["acceptance_criteria"] == criteria
 
 
 def test_plan_crud_dependency_validation(client: TestClient) -> None:

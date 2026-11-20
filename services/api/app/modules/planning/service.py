@@ -13,6 +13,13 @@ from app.modules.specifications.generator import TITLES, ordered, snapshot
 from app.modules.specifications.models import Artefact
 
 
+def bounded_criteria(criteria: list[str]) -> list[str]:
+    result = [item if len(item) <= 1000 else item[:999] + "…" for item in criteria[:20]]
+    if len(criteria) > 20:
+        result[19] = f"…and {len(criteria) - 19} more, see Acceptance criteria artefact"
+    return result
+
+
 def task_notes(
     artefacts: list[Artefact],
     technologies: dict[str, str],
@@ -153,7 +160,7 @@ def generate(
             implementation_notes=task_notes(
                 artefacts, context["technologies"], kinds, categories
             ),
-            acceptance_criteria=criteria,
+            acceptance_criteria=bounded_criteria(criteria),
             skill=skill,
             workflow=(
                 "pair: human confirms scope and reviews; agent implements "
