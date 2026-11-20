@@ -65,6 +65,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         },
     )
     app.state.engine = engine
+    app.state.telemetry = telemetry
     app.state.catalogue = catalogue
 
     @app.exception_handler(StarletteHTTPException)

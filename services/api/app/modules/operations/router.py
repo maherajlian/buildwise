@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.modules.operations import generator, service
+from app.modules.operations import generator, service, telemetry
 from app.modules.operations.models import SLO, Risk, TestCase
 from app.modules.operations.schemas import (
     OperationsGenerate,
@@ -32,7 +32,10 @@ def generate(
     request: Request,
     x_project_token: OwnerToken,
 ) -> OperationsRead:
-    with Session(request.app.state.engine) as session:
+    with (
+        telemetry.generation(request.app.state.telemetry),
+        Session(request.app.state.engine) as session,
+    ):
         project = get_project(session, project_id, x_project_token, write=True)
         result = service.generate(
             session,
