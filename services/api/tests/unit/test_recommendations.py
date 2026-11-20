@@ -118,6 +118,33 @@ def test_sample_detection_and_evidence() -> None:
     assert (budget.value, budget.source) == ("flexible", "explicit")
 
 
+@pytest.mark.parametrize("status", ["proposed", "confirmed"])
+def test_detection_excludes_out_of_scope_and_deferred(status: str) -> None:
+    signals, notes = derive_signals(
+        {"out_of_scope": ["Stripe payments, AI and global scale"]},
+        [
+            {
+                "title": "Deferred payments",
+                "status": "deferred",
+                "description": "Stripe AI global scale",
+                "acceptance_criteria": ["SMS reminders"],
+            },
+            {"title": "Calendar export", "status": status},
+        ],
+        Overrides(),
+    )
+    values = {s.id: s for s in signals}
+    assert values["integrations"].value == ["calendar"]
+    assert values["scale"].source == "default"
+    assert values["background_jobs"].value == "no"
+    assert not notes
+    assert all(
+        "out_of_scope" not in e.field and "Deferred payments" not in e.field
+        for signal in signals
+        for e in signal.evidence
+    )
+
+
 def test_long_evidence_keeps_matched_phrase() -> None:
     signals, _ = derive_signals(
         {"constraints": ["Context " * 80 + "low budget"]}, [], Overrides()

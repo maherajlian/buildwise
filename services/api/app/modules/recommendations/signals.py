@@ -61,6 +61,8 @@ def derive_signals(
 ) -> tuple[list[Signal], list[str]]:
     texts: list[tuple[str, str]] = []
     for field, value in sorted(answers.items()):
+        if field == "out_of_scope":
+            continue
         if isinstance(value, str):
             texts.append((f"discovery.{field}", value))
         elif isinstance(value, list):
@@ -68,6 +70,8 @@ def derive_signals(
                 (f"discovery.{field}[{i}]", str(v)) for i, v in enumerate(value)
             )
     for req in sorted(requirements, key=lambda r: str(r["title"])):
+        if req.get("status") == "deferred":
+            continue
         for field in ("title", "description", "acceptance_criteria"):
             value = req.get(field, "")
             values = value if isinstance(value, list) else [value]
