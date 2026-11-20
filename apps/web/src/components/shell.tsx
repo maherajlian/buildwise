@@ -28,11 +28,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
       <aside className="sidebar">
-        <Link className="brand" href="/" aria-label="BuildWise home">
-          <span className="brand-icon">
+        <Link className="brand" href="/">
+          <span className="brand-icon" aria-hidden="true">
             <Blocks size={22} />
           </span>
-          BuildWise<span className="beta">BETA</span>
+          BuildWise <span className="beta">BETA</span>
         </Link>
         <div className="workspace-label">YOUR WORKSPACE</div>
         <nav aria-label="Main navigation">
