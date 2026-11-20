@@ -21,6 +21,7 @@ from app.modules.operations.schemas import (
 )
 from app.modules.projects.access import OptionalOwnerToken, OwnerToken, get_project
 from app.modules.specifications.generator import markdown, ordered
+from app.telemetry.operations import observed
 
 router = APIRouter(prefix="/api/v1/projects/{project_id}", tags=["operations"])
 
@@ -77,6 +78,7 @@ def load(project_id: UUID, request: Request, token: str | None) -> OperationsRea
 
 
 @router.get("/operations/export/markdown", response_class=Response)
+@observed("exports")
 def export_all(
     project_id: UUID, request: Request, x_project_token: OptionalOwnerToken = None
 ) -> Response:
@@ -92,6 +94,7 @@ def export_all(
 
 
 @router.get("/test-cases/export/markdown", response_class=Response)
+@observed("exports")
 def export_tests(
     project_id: UUID, request: Request, x_project_token: OptionalOwnerToken = None
 ) -> Response:
@@ -102,6 +105,7 @@ def export_tests(
 
 
 @router.get("/risks/export/markdown", response_class=Response)
+@observed("exports")
 def export_risks(
     project_id: UUID, request: Request, x_project_token: OptionalOwnerToken = None
 ) -> Response:
@@ -112,6 +116,7 @@ def export_risks(
 
 
 @router.get("/slos/export/markdown", response_class=Response)
+@observed("exports")
 def export_slos(
     project_id: UUID, request: Request, x_project_token: OptionalOwnerToken = None
 ) -> Response:

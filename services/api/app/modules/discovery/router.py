@@ -14,6 +14,7 @@ from app.modules.discovery.schemas import (
 )
 from app.modules.projects.access import OptionalOwnerToken, OwnerToken, get_project
 from app.modules.projects.models import Discovery, Project
+from app.telemetry.operations import observed
 
 router = APIRouter(prefix="/api/v1/projects/{project_id}/discovery", tags=["discovery"])
 
@@ -61,6 +62,7 @@ def read_discovery(
 
 
 @router.put("", response_model=DiscoveryRead)
+@observed("discovery")
 def save_discovery(
     project_id: UUID,
     body: DiscoveryWrite,

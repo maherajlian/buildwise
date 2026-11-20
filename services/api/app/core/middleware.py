@@ -154,8 +154,7 @@ class RequestSafety:
 
         try:
             await self.app(scope, replay, wrapped_send)
-            logger.info("request_completed")
-        except Exception:
-            logger.error("request_failed")
+        except Exception as exc:
+            logger.error("request_failed", extra={"error_type": type(exc).__name__})
             if not started:
                 await reject(500, "internal_error", "Internal server error")

@@ -10,8 +10,10 @@ from app.modules.recommendations.schemas import (
     ScoredEntry,
     Signal,
 )
+from app.telemetry.operations import observed
 
 
+@observed("rules")
 def recommend(signals: list[Signal], catalogue: Catalogue) -> Result:
     ordered = sorted(signals, key=lambda s: s.id)
     by_id = {s.id: s for s in ordered}

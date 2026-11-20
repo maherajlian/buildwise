@@ -67,7 +67,10 @@ def test_generation_emits_bounded_business_telemetry(
         ]
         assert len(spans) == 1
         outcome = "error" if scenario == "error" else "success"
-        assert spans[0].attributes == {"outcome": outcome}
+        expected = {"buildwise.operation": "operations.generate"}
+        if scenario == "error":
+            expected["error.type"] = "ValueError"
+        assert spans[0].attributes == expected
         assert not spans[0].events
         assert spans[0].status.description is None
         assert spans[0].status.status_code == (

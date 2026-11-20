@@ -8,6 +8,7 @@ from app.modules.projects.access import OptionalOwnerToken, OwnerToken, get_proj
 from app.modules.specifications import generator
 from app.modules.specifications.models import Artefact
 from app.modules.specifications.schemas import CreateADR, Edit, Generate, Read
+from app.telemetry.operations import observed
 
 router = APIRouter(
     prefix="/api/v1/projects/{project_id}/artefacts", tags=["specifications"]
@@ -22,6 +23,7 @@ def owned(session: Session, project_id: UUID, aid: UUID) -> Artefact:
 
 
 @router.post("/generate", response_model=list[Read])
+@observed("artifacts")
 def generate(
     project_id: UUID, body: Generate, request: Request, x_project_token: OwnerToken
 ) -> list[Artefact]:
@@ -51,6 +53,7 @@ def list_artefacts(
 
 
 @router.get("/export/markdown", response_class=Response)
+@observed("exports")
 def export(
     project_id: UUID, request: Request, x_project_token: OptionalOwnerToken = None
 ) -> Response:
@@ -96,6 +99,7 @@ def read(
 
 
 @router.get("/{aid}/markdown", response_class=Response)
+@observed("exports")
 def markdown(
     project_id: UUID,
     aid: UUID,
