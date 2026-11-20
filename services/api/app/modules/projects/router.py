@@ -4,7 +4,6 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response
-from opentelemetry import metrics
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -22,9 +21,6 @@ from app.modules.projects.models import Discovery, Project, Requirement
 
 router = APIRouter(prefix="/api/v1/projects", tags=["projects"])
 logger = logging.getLogger("buildwise")
-project_events = metrics.get_meter("buildwise").create_counter(
-    "buildwise.projects.changes", description="Project create/update/delete count"
-)
 ProjectStatus = Literal["draft", "active", "archived"]
 
 
@@ -104,7 +100,6 @@ def create_project(
         session.add(project)
         session.commit()
         session.refresh(project)
-        project_events.add(1, {"operation": "create"})
         return project
 
 
@@ -164,7 +159,6 @@ def update_project(
         project.updated_at = func.now()
         session.commit()
         session.refresh(project)
-        project_events.add(1, {"operation": "update"})
         return project
 
 
@@ -175,7 +169,6 @@ def delete_project(
     with Session(request.app.state.engine) as session:
         session.delete(get_project(session, project_id, x_project_token, write=True))
         session.commit()
-        project_events.add(1, {"operation": "delete"})
         return Response(status_code=204)
 
 
