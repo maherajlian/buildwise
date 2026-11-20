@@ -127,6 +127,7 @@ jobs:
         working-directory: services/api
         run: |
           uv run alembic upgrade head
+          uv run python -m app.scripts.seed_sample
           uv run uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 > ../../api-e2e.log 2>&1 &
           echo $! > ../../api-e2e.pid
           curl --fail --silent --show-error --retry 30 --retry-connrefused --retry-all-errors --retry-delay 2 http://localhost:8000/ready
