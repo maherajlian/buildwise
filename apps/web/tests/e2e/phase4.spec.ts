@@ -105,6 +105,9 @@ test("owner specifies, persists edits, exports complete Markdown and plans with 
     .getByRole("button", { name: "Generate plan", exact: true })
     .click();
   await expect(page.getByLabel("Status for T-001")).toHaveValue("ready");
+  const foundation = page.getByRole("article", { name: /^T-001:/ });
+  await expect(foundation).not.toContainText("Project:");
+  await expect(foundation).not.toContainText("Design guidance:");
   await page.getByLabel("Status for T-003").selectOption("in_progress");
   await expect(
     page.getByRole("article", { name: /^T-003:/ }).getByRole("alert"),
@@ -133,6 +136,20 @@ test("owner specifies, persists edits, exports complete Markdown and plans with 
     "Dependencies:",
   ])
     expect(plan).toContain(value);
+  await page
+    .getByText("Implementation notes for T-001", { exact: true })
+    .click();
+  await page
+    .getByText("Implementation notes for T-004", { exact: true })
+    .click();
+  const deployment = page.getByRole("article", { name: /^T-004:/ });
+  await expect(
+    deployment
+      .getByRole("listitem")
+      .filter({ hasText: "See: Deployment plan, Observability plan" }),
+  ).toBeVisible();
+  expect(plan).toContain("- See: Deployment plan, Observability plan");
+  expect(plan).not.toContain("Design guidance:");
   await page.getByRole("button", { name: "Edit T-002", exact: true }).click();
   await accessibleAndFits(page);
   await page.getByRole("button", { name: "Cancel", exact: true }).click();

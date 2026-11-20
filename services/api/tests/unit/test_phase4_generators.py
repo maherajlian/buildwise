@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from app.modules.planning.models import PlanTask
 from app.modules.planning.schemas import EpicRead, PlanRead, TaskRead, Validation
 from app.modules.planning.service import markdown as plan_markdown
-from app.modules.planning.service import validation_errors
+from app.modules.planning.service import task_notes, validation_errors
 from app.modules.projects.models import Project
 from app.modules.specifications.generator import TITLES, export, markdown, template
 from app.modules.specifications.models import Artefact
@@ -185,3 +185,20 @@ def test_plan_markdown_complete() -> None:
             assert value in output
     plan.tasks = []
     assert "TODO" in plan_markdown(project, plan)
+
+
+def test_task_notes_are_scoped_bullets_with_missing_context_placeholders() -> None:
+    artefacts = [Artefact(kind=kind, title=TITLES[kind], sections=[]) for kind in KINDS]
+    notes = task_notes(
+        artefacts,
+        {"hosting": "Render Free", "database": "PostgreSQL"},
+        ("deployment", "observability"),
+        ("hosting",),
+    )
+    assert notes == "- See: Deployment plan, Observability plan\n- Hosting: Render Free"
+    assert "PostgreSQL" not in notes
+    assert "Product requirements document" not in notes
+    empty = task_notes([], {}, ("deployment", "observability"), ("hosting",))
+    assert "TODO: review Deployment plan" in empty
+    assert "TODO: select technology" in empty
+    assert all(line.startswith("- ") for line in empty.splitlines())

@@ -11,6 +11,7 @@ import { getProjectToken, readProjectToken } from "@/lib/token";
 import { downloadMarkdown } from "@/lib/download";
 import { ErrorBox, lines, toApiError } from "@/components/form-error";
 import { Button } from "@/components/ui/button";
+import { MarkdownPreview } from "@/components/markdown-preview";
 
 const STATUSES: Record<NonNullable<PlanTask["status"]>, string> = {
   backlog: "Backlog",
@@ -278,9 +279,9 @@ export function BuildPlan({
                     </ul>
                     <details>
                       <summary>Implementation notes for {task.key}</summary>
-                      <p className="whitespace-pre-wrap">
-                        {task.implementation_notes || "No notes yet."}
-                      </p>
+                      <MarkdownPreview
+                        text={task.implementation_notes || "No notes yet."}
+                      />
                     </details>
                     {!readOnly &&
                       (editing === task.id ? (

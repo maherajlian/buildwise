@@ -9,7 +9,31 @@ from app.modules.planning.models import Epic, PlanTask
 from app.modules.planning.schemas import EpicRead, PlanRead, TaskRead, Validation
 from app.modules.projects.models import Project
 from app.modules.recommendations.schemas import Catalogue
-from app.modules.specifications.generator import ordered, snapshot
+from app.modules.specifications.generator import TITLES, ordered, snapshot
+from app.modules.specifications.models import Artefact
+
+
+def task_notes(
+    artefacts: list[Artefact],
+    technologies: dict[str, str],
+    kinds: tuple[str, ...],
+    categories: tuple[str, ...],
+) -> str:
+    titles = [
+        next(
+            (a.title for a in artefacts if a.kind == kind),
+            f"TODO: review {TITLES[kind]}",
+        )
+        for kind in kinds
+    ]
+    return "\n".join(
+        ["- See: " + ", ".join(titles)]
+        + [
+            f"- {category.capitalize()}: "
+            f"{technologies.get(category) or 'TODO: select technology'}"
+            for category in categories
+        ]
+    )
 
 
 def validation_errors(tasks: list[PlanTask]) -> list[str]:
@@ -91,20 +115,6 @@ def generate(
     session.execute(delete(Epic).where(Epic.project_id == project.id))
     context = snapshot(session, project, catalogue)
     artefacts = ordered(session, project.id)
-    technology = ", ".join(f"{k}: {v}" for k, v in context["technologies"].items())
-    references = (
-        ", ".join(a.title for a in artefacts[:20])
-        or "TODO: generate and review specifications"
-    )
-    guidance = "\n".join(
-        f"{a.title}: {a.sections[0]['body'][:200]}"
-        for a in artefacts[:10]
-        if a.sections
-    )
-    notes = (
-        f"Project: {project.name}. {project.description}\n"
-        f"Stack: {technology}\nReview: {references}\nDesign guidance:\n{guidance}"
-    )[:20000]
     counter = 0
 
     def epic(title: str, description: str, position: int) -> Epic:
@@ -122,6 +132,8 @@ def generate(
         group: Epic,
         title: str,
         description: str,
+        kinds: tuple[str, ...],
+        categories: tuple[str, ...],
         deps: list[str],
         criteria: list[str],
         skill: str,
@@ -138,7 +150,9 @@ def generate(
             description=description,
             priority=priority,
             status="backlog" if deps else "ready",
-            implementation_notes=notes,
+            implementation_notes=task_notes(
+                artefacts, context["technologies"], kinds, categories
+            ),
             acceptance_criteria=criteria,
             skill=skill,
             workflow=(
@@ -158,7 +172,10 @@ def generate(
     first = task(
         foundation,
         "Review design and establish project foundation",
-        notes,
+        "Review the architecture and prepare the repository for implementation. "
+        "Confirm local development checks pass.",
+        ("architecture", "technical_design"),
+        ("backend", "database"),
         [],
         [
             "Architecture and security decisions approved",
@@ -175,7 +192,10 @@ def generate(
         item = task(
             group,
             req["title"],
-            req["description"],
+            "Implement this requirement as a tested user-facing workflow. "
+            "Verify its acceptance criteria before review.",
+            ("user_stories", "api_contract"),
+            ("frontend", "backend"),
             [str(first.id)],
             req["acceptance_criteria"]
             or ["TODO: agree measurable acceptance criteria"],
@@ -189,7 +209,10 @@ def generate(
         item = task(
             group,
             "TODO: define and implement the first user journey",
-            context["discovery"].get("problem_statement") or project.description,
+            "Define the first user journey with stakeholders, then implement it "
+            "with acceptance tests.",
+            ("prd", "user_stories"),
+            ("frontend", "backend"),
             [str(first.id)],
             ["TODO: confirm the user journey with stakeholders"],
             "Product discovery / implementation",
@@ -205,7 +228,10 @@ def generate(
     quality_task = task(
         quality,
         "Verify quality and security",
-        ", ".join(r["title"] for r in nfr),
+        "Run acceptance, security and performance checks. "
+        "Resolve failures before preparing the release.",
+        ("test_strategy", "security", "non_functional_requirements"),
+        ("backend",),
         functional,
         checks or ["TODO: agree quality budgets and security checks"],
         "Testing / security / performance",
@@ -217,7 +243,10 @@ def generate(
     task(
         deployment,
         "Deploy and verify telemetry",
-        notes,
+        "Deploy the application and verify service health. "
+        "Check telemetry and rehearse rollback before release.",
+        ("deployment", "observability"),
+        ("hosting", "observability"),
         [str(quality_task.id)],
         [
             "Health and smoke checks pass",

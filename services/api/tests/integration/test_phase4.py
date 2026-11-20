@@ -196,19 +196,20 @@ def test_plan_generation_context_deterministic_and_export(client: TestClient) ->
         == 200
     )
     docs = client.get(base + "/artefacts", headers=owner).json()
-    prd = next(a for a in docs if a["kind"] == "prd")
+    architecture = next(a for a in docs if a["kind"] == "architecture")
     assert (
         client.patch(
-            base + "/artefacts/" + prd["id"],
+            base + "/artefacts/" + architecture["id"],
             headers=owner,
             json={
+                "title": "Reviewed launch architecture",
                 "sections": [
                     {
                         "key": "decision",
                         "heading": "Decision",
                         "body": "Implement the reviewed launch workflow",
                     }
-                ]
+                ],
             },
         ).status_code
         == 200
@@ -222,12 +223,24 @@ def test_plan_generation_context_deterministic_and_export(client: TestClient) ->
     assert all(
         t["acceptance_criteria"] and t["skill"] and t["workflow"] for t in plan["tasks"]
     )
-    assert "Product requirements document" in plan["tasks"][0]["implementation_notes"]
-    assert "backend:" in plan["tasks"][0]["implementation_notes"]
+    assert "Reviewed launch architecture" in plan["tasks"][0]["implementation_notes"]
+    assert "Backend:" in plan["tasks"][0]["implementation_notes"]
+    for task in plan["tasks"]:
+        assert 0 < len(task["description"]) < 200
+        assert "\n" not in task["description"]
+        assert (
+            "Implement the reviewed launch workflow" not in task["implementation_notes"]
+        )
+        assert all(
+            line.startswith("- ") for line in task["implementation_notes"].splitlines()
+        )
+        assert "Stack:" not in task["implementation_notes"]
+    deployment = plan["tasks"][-1]
     assert (
-        "Implement the reviewed launch workflow"
-        in plan["tasks"][0]["implementation_notes"]
+        "See: Deployment plan, Observability plan" in deployment["implementation_notes"]
     )
+    assert "Hosting:" in deployment["implementation_notes"]
+    assert "Product requirements document" not in deployment["implementation_notes"]
     assert client.post(url + "/generate", headers=owner, json={}).json() == plan
     overwritten = client.post(
         url + "/generate", headers=owner, json={"overwrite": True}
