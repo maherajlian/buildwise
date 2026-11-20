@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
+const wcagTags = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
+
 const pages = [
   ["/", "Dashboard", "Build with a clearer picture."],
   ["/projects/", "Projects", "Projects"],
@@ -133,7 +135,7 @@ test("illustrative sample project is read-only", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByRole("button", { name: /^Edit/ })).toHaveCount(0);
   const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+    .withTags(wcagTags)
     .analyze();
   expect(results.violations).toEqual([]);
 });
@@ -146,6 +148,20 @@ test("keyboard skip-link reaches main content", async ({ page }) => {
   ).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.locator("main")).toBeFocused();
+});
+
+test("home link exposes the visible brand in its accessible name", async ({
+  page,
+}) => {
+  await page.goto("/observability/");
+  const brand = page.locator("a.brand");
+  const results = await new AxeBuilder({ page })
+    .include("a.brand")
+    .withRules(["label-content-name-mismatch"])
+    .analyze();
+  expect(results.violations).toEqual([]);
+  await expect(brand).toHaveAccessibleName("BuildWise BETA");
+  await expect(brand).toHaveAttribute("href", "/");
 });
 
 for (const [path, label, heading] of pages) {
@@ -177,7 +193,7 @@ for (const [path, label, heading] of pages) {
     expect(
       (
         await new AxeBuilder({ page })
-          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .withTags(wcagTags)
           .analyze()
       ).violations,
     ).toEqual([]);
@@ -194,7 +210,7 @@ for (const [path, label, heading] of pages) {
     expect(
       (
         await new AxeBuilder({ page })
-          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .withTags(wcagTags)
           .analyze()
       ).violations,
     ).toEqual([]);
