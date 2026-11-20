@@ -17,9 +17,12 @@ this is not a claim that every provider's account billing page was inspected.
 - Liveness: https://buildwise-api-p4yq.onrender.com/health
 - Readiness: https://buildwise-api-p4yq.onrender.com/ready
 
-Deployed application commit: `1bad006ed43af69ddf88c849601ac02bb525fd89`, from
-`devin/phase1-foundation` (PR #2 not merged at deployment). This results document
-is on `devin/deployment-spike`. No application/configuration fixes were necessary.
+Current Render API commit: `9b555b3709910a3efd66601efc1f93d94fb6ae99`, from
+`main` after PR #2's squash merge. The original API deployment and the existing
+Pages static export used `1bad006ed43af69ddf88c849601ac02bb525fd89` from
+`devin/phase1-foundation`. Pages was not rebuilt for the API branch switch.
+This results document was rebased onto `origin/main` on `devin/deployment-spike`.
+No application or repository deployment-configuration fixes were necessary.
 
 ## Resources, plans and safety controls
 
@@ -38,7 +41,7 @@ London hostname. Render was created through `POST /v1/services` with an explicit
 Render configuration:
 
 - Repository: `https://github.com/maherajlian/buildwise`
-- Branch: `devin/phase1-foundation`
+- Branch: `main` (switched from `devin/phase1-foundation` after PR #2 merged)
 - Root directory: `services/api`
 - Dockerfile: `./Dockerfile`, context `.` relative to that root
 - `APP_ENV=production`, `OTEL_SERVICE_NAME=buildwise-api`
@@ -81,7 +84,7 @@ a pooled-connection stress test.
 |---|---|---|
 | First Neon connection + `SELECT 1` | **3.054 s** | Includes DNS/TLS/connect/query overhead from this machine. Prior Neon idle/suspension state was not observable, so this is **not a confirmed compute-resume measurement**. |
 | Neon Alembic upgrade | **3.165 s** | End-to-end migration invocation after the initial connection probe. |
-| Render deploy creation → live | **76.357 s** | API timestamps `17:55:00.171605Z` → `17:56:16.528883Z`; includes queue/build/startup, not isolated Docker build time. Deploy `dep-dc08it56e07s73c0d0jg`. |
+| Original Render deploy creation → live | **76.357 s** | API timestamps `17:55:00.171605Z` → `17:56:16.528883Z`; includes queue/build/startup, not isolated Docker build time. Deploy `dep-dc08it56e07s73c0d0jg`. |
 | Local Next.js export | Approximately **2 s** observed command wall time | Build output: compilation 104 ms; TypeScript 1263 ms; static generation 158 ms. No Cloudflare build was run because this is Direct Upload. |
 | Wrangler upload + deploy invocation | **6.042 s** | 52 files, reported asset-upload time **1.50 s**. Includes cached CLI startup. |
 | First public `/health` request during initial bring-up | **14.208 s**, HTTP 200 | Initial deployment request; **not** a post-idle cold-start sample. |
@@ -124,6 +127,37 @@ Screenshots were inspected and saved outside git:
 
 - `/home/ubuntu/screenshots/buildwise-live-desktop.png`
 - `/home/ubuntu/screenshots/buildwise-live-360.png`
+
+### Follow-up: Render deployed from main
+
+After PR #2 was squash-merged, the service branch was changed through
+`PATCH /v1/services/{serviceId}` with only `{"branch":"main"}`. The response
+again confirmed `plan: free`. A subsequent `POST /v1/services/{serviceId}/deploys`
+triggered a deploy of `9b555b3709910a3efd66601efc1f93d94fb6ae99`.
+No plan, secret, CORS origin, or Pages configuration was changed, and no
+card/payment/upgrade prompt appeared.
+
+```text
+RENDER_UPDATE HTTP 200 branch=main plan=free
+RENDER_DEPLOY_TRIGGER HTTP 201 deploy_id=dep-dc08l7uk1f9s73859gk0 status=build_in_progress
+RENDER_DEPLOY_STATUS status=live commit=9b555b3709910a3efd66601efc1f93d94fb6ae99
+createdAt=2026-11-20T17:59:59.467415Z finishedAt=2026-11-20T18:01:02.984874Z
+RENDER_MAIN_DEPLOY_SECONDS 63.517
+```
+
+After that deploy reached `live`, curl checks and a fresh Chromium visit to the
+stable Pages URL produced:
+
+```text
+{"status":"ok"}
+RENDER_MAIN_HEALTH HTTP 200 seconds 0.250462
+{"status":"ready"}
+RENDER_MAIN_READY HTTP 200 seconds 0.490784
+PAGES_MAIN_BROWSER All systems ready
+PAGES_MAIN_BROWSER API responding · Database connected
+```
+
+Screenshot inspected: `/home/ubuntu/screenshots/buildwise-main-dashboard.png`.
 
 ## Grafana: ingestion unverified
 
