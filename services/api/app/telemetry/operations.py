@@ -77,11 +77,6 @@ def observed(name: str) -> Callable[[F], F]:
                         elif fault == name + ":fail":
                             raise RuntimeError("Injected failure")
                     result = fn(*args, **kwargs)
-                    if name == "artifacts":
-                        for item in result:
-                            telemetry.metrics.get_meter("buildwise").create_counter(
-                                COUNTERS[name]
-                            ).add(1, {"buildwise.artifact.type": item.kind})
                     return result
             finally:
                 current.reset(token)

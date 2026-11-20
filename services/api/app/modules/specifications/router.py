@@ -29,15 +29,22 @@ def generate(
 ) -> list[Artefact]:
     with Session(request.app.state.engine, expire_on_commit=False) as session:
         project = get_project(session, project_id, x_project_token, write=True)
+        generated: list[Artefact] = []
         items = generator.generate(
             session,
             project,
             request.app.state.catalogue,
             body.kinds,
             body.overwrite_edited,
+            generated=generated,
         )
         project.updated_at = func.now()
         session.commit()
+        counter = request.app.state.telemetry.metrics.get_meter(
+            "buildwise"
+        ).create_counter("buildwise_artifact_generation_total")
+        for item in generated:
+            counter.add(1, {"buildwise.artifact.type": item.kind})
         for item in items:
             session.refresh(item)
         return items
