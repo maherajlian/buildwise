@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: services/api
+    env:
+      APP_ENV: test
+      DATABASE_URL: postgresql+psycopg://buildwise:buildwise@localhost:5432/buildwise
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: buildwise
+          POSTGRES_PASSWORD: buildwise
+          POSTGRES_DB: buildwise
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U buildwise -d buildwise"
+          --health-interval 2s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: services/api/uv.lock
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy app
+      - run: uv run pytest -q
+      - name: Migrate empty database and detect schema drift
+        run: |
+          uv run alembic upgrade head
+          uv run alembic check
+      - name: Check committed OpenAPI
+        run: |
+          uv run python -m app.scripts.export_openapi
+          git diff --exit-code -- ../../packages/shared-types/openapi.json
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Check generated API types
+        run: |
+          pnpm generate:types
+          git diff --exit-code -- packages/shared-types/api.d.ts
+      - run: pnpm -C apps/web lint
+      - run: pnpm -C apps/web typecheck
+      - run: pnpm -C apps/web test
+      - run: pnpm -C apps/web build
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_ENV: test
+      DATABASE_URL: postgresql+psycopg://buildwise:buildwise@localhost:5432/buildwise
+      CORS_ORIGINS: '["http://localhost:3000"]'
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: buildwise
+          POSTGRES_PASSWORD: buildwise
+          POSTGRES_DB: buildwise
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U buildwise -d buildwise"
+          --health-interval 2s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: services/api/uv.lock
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: uv sync --frozen --project services/api
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -C apps/web build
+      - run: pnpm -C apps/web exec playwright install --with-deps chromium
+      - name: Migrate and start API
+        working-directory: services/api
+        run: |
+          uv run alembic upgrade head
+          uv run uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 > ../../api-e2e.log 2>&1 &
+          echo $! > ../../api-e2e.pid
+          curl --fail --silent --show-error --retry 30 --retry-connrefused --retry-all-errors --retry-delay 2 http://localhost:8000/ready
+      - name: Test static export against real API and database
+        run: pnpm -C apps/web test:e2e
+      - name: Stop API
+        if: always()
+        run: |
+          if [ -f api-e2e.pid ]; then kill "$(cat api-e2e.pid)" || true; fi
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-diagnostics
+          path: |
+            api-e2e.log
+            apps/web/test-results/
+          retention-days: 7
+
+  no-paid-ai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m unittest discover -s scripts -p 'test_*.py' -v
+      - run: python scripts/no_paid_ai.py
