@@ -5,6 +5,7 @@ from opentelemetry.propagate import extract
 from opentelemetry.trace import SpanKind, StatusCode
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from app.telemetry.operations import current
 from app.telemetry.setup import Telemetry
 
 
@@ -37,6 +38,7 @@ class RequestTelemetry:
                     status = message["status"]
                 await send(message)
 
+            token = current.set(self.telemetry)
             try:
                 await self.app(scope, receive, wrapped)
             except Exception as exc:
@@ -44,6 +46,7 @@ class RequestTelemetry:
                 span.set_attribute("error.type", type(exc).__name__)
                 raise
             finally:
+                current.reset(token)
                 route = getattr(scope.get("route"), "path", "unmatched")
                 attrs = {
                     "http.request.method": method,

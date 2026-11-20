@@ -12,6 +12,7 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 
 from app.core.settings import Settings
 from app.main import create_app
+from app.telemetry.operations import current
 from app.telemetry.setup import configure_telemetry
 
 
@@ -245,3 +246,59 @@ def test_artifact_counter_counts_only_generated_items(
             "prd": 2 if scenario in {"subset", "overwrite"} else 1,
             "architecture": 1,
         }
+
+
+@pytest.mark.parametrize("path", ["/artefacts", "/operations/generate"])
+@pytest.mark.parametrize("scenario", ["empty", "requirements", "error"])
+def test_rules_are_observed_without_business_decorator(
+    migrated_url: str, path: str, scenario: str
+) -> None:
+    exporter = InMemorySpanExporter()
+    reader = InMemoryMetricReader()
+    settings = Settings(database_url=migrated_url, otel_traces_sampler_arg=1)
+    telemetry = configure_telemetry(settings, exporter, reader)
+    with patch("app.main.configure_telemetry", return_value=telemetry):
+        app = create_app(settings)
+    with TestClient(app, raise_server_exceptions=False) as client:
+        headers = {"X-Project-Token": "private-owner-token-" + "x" * 32}
+        project = client.post(
+            "/api/v1/projects", json={"name": "Test"}, headers=headers
+        )
+        base = "/api/v1/projects/" + project.json()["id"]
+        if scenario == "requirements":
+            assert (
+                client.post(
+                    base + "/requirements",
+                    headers=headers,
+                    json={"type": "functional", "title": "Test requirement"},
+                ).status_code
+                == 201
+            )
+        body = {"kind": "adr", "title": "Decision"} if path == "/artefacts" else {}
+        if scenario == "error":
+            with patch(
+                "app.modules.recommendations.engine.hashlib.sha256",
+                side_effect=ValueError,
+            ):
+                response = client.post(base + path, headers=headers, json=body)
+            assert response.status_code == 500
+        else:
+            response = client.post(base + path, headers=headers, json=body)
+            assert response.status_code == (201 if path == "/artefacts" else 200)
+        rules = [s for s in exporter.get_finished_spans() if s.name == "rules"]
+        assert len(rules) == 1
+        assert rules[0].parent is not None
+        if scenario == "error":
+            assert rules[0].attributes["error.type"] == "ValueError"
+        data = reader.get_metrics_data()
+        assert data is not None
+        points = [
+            p
+            for r in data.resource_metrics
+            for s in r.scope_metrics
+            for m in s.metrics
+            if m.name == "buildwise_rule_evaluation_duration_seconds"
+            for p in m.data.data_points
+        ]
+        assert sum(p.count for p in points) == 1
+        assert current.get() is None
