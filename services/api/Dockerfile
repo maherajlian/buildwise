@@ -9,4 +9,4 @@ COPY alembic.ini ./
 ENV PATH="/app/.venv/bin:$PATH" PORT=8000
 USER buildwise
 EXPOSE 8000
-CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:create_app --factory --host 0.0.0.0 --port ${PORT} --no-access-log"]
+CMD ["sh", "-c", "alembic upgrade head && python -m app.scripts.seed_sample && exec uvicorn app.main:create_app --factory --host 0.0.0.0 --port ${PORT} --no-access-log"]
