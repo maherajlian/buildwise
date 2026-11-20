@@ -1,6 +1,6 @@
 # BuildWise implementation proposal (blueprint §18 first task)
 
-Date: 2026-11-20. Status: awaiting owner review before Phase 0/1 implementation.
+Date: 2026-11-20. Status: reviewed 2026-11-20. Defaults accepted for D1, D2, D4, D5, D6, D7; D3 deferred until the deployment spike shows whether Render asks for a card.
 
 ## 1. Proposal
 Build BuildWise as a deterministic, zero-paid-AI modular monolith: a static Next.js + TypeScript frontend on Cloudflare Pages, one FastAPI service on Render Free, Neon Free Postgres, and OpenTelemetry exported straight to Grafana Cloud Free. Work proceeds spec-first in small PRs: Phase 0 (skeleton, docs, deployment spike) then Phase 1 (app shell, API, DB, migrations, health/ready, typed client, CI). Feature phases 2-7 follow only after owner review.
@@ -8,7 +8,7 @@ Build BuildWise as a deterministic, zero-paid-AI modular monolith: a static Next
 Feasibility verdict: a low-traffic public MVP **can run with zero mandatory paid services**, conditional on account sign-up and the deployment spike; it cannot be always-on (Render sleeps after 15 min idle). See `docs/hosting/free-tier-assessment.md`.
 
 ## 2. Ambiguities and decisions needing human input
-Each has a default that will be used unless the owner says otherwise.
+Outcome (2026-11-20): defaults accepted except D3, which stays open until the spike.
 
 | # | Decision | Default |
 |---|---|---|
