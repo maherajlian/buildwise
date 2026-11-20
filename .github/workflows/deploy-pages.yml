@@ -1,0 +1,69 @@
+name: Deploy production site
+
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      API_BASE_URL: ${{ vars.API_BASE_URL || 'https://buildwise-api-p4yq.onrender.com' }}
+      SITE_URL: https://buildwise-1fy.pages.dev/
+      DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Build production static export
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: NEXT_PUBLIC_API_BASE_URL="$API_BASE_URL" pnpm -C apps/web build
+      - name: Publish to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          main_sha="$(git ls-remote --exit-code origin refs/heads/main | cut -f1)"
+          if [[ "$main_sha" != "$DEPLOY_SHA" ]]; then
+            echo "Skipping a superseded commit: $DEPLOY_SHA"
+            exit 0
+          fi
+          : "${CLOUDFLARE_API_TOKEN:?Set the CLOUDFLARE_API_TOKEN Actions secret}"
+          : "${CLOUDFLARE_ACCOUNT_ID:?Set the CLOUDFLARE_ACCOUNT_ID Actions secret}"
+          curl --fail --silent --show-error --max-time 30 \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/buildwise" \
+            | jq -e '.success and .result.production_branch == "main"' > /dev/null
+          pnpm dlx wrangler@4.165.0 pages deploy apps/web/out \
+            --project-name buildwise --branch main --commit-hash "$DEPLOY_SHA"
+          status="$(curl --fail --silent --show-error --output /dev/null \
+            --write-out '%{http_code}' --max-time 15 --retry 4 --retry-all-errors "$SITE_URL")"
+          if [[ "$status" != 200 ]]; then
+            echo "::error::Production site returned HTTP $status, expected 200"
+            exit 1
+          fi
+          echo "Production site returned HTTP $status"

@@ -70,6 +70,24 @@ See [architecture](docs/architecture/system-design.md),
 [hosting assessment](docs/hosting/free-tier-assessment.md), and
 [implementation plan](docs/plan/implementation-proposal.md).
 
+## Operations: production deploys
+
+Merges to `main` deploy after CI passes. The existing Render Free API service
+tracks `main` with **Auto-Deploy → After CI Checks Pass**. The
+[Deploy production site](.github/workflows/deploy-pages.yml) workflow builds the
+tested commit's static export and publishes it to the existing Cloudflare Pages
+Direct Upload project `buildwise`, whose production branch is `main`. The two
+deploys run independently; changes to the API should be backward compatible
+with the previous frontend during rollout.
+
+Set `CLOUDFLARE_API_TOKEN` (account-scoped **Cloudflare Pages: Edit**) and
+`CLOUDFLARE_ACCOUNT_ID` as GitHub Actions secrets. No Render credential is needed
+in GitHub Actions. The frontend build uses the `API_BASE_URL` repository variable
+if set, or the production Render URL otherwise. Check the Pages workflow run
+and the Render Events tab for the merged commit; then verify the
+[production site](https://buildwise-1fy.pages.dev/) and the
+[API readiness endpoint](https://buildwise-api-p4yq.onrender.com/ready) return 200.
+
 ## Operations: optional keep-warm ping
 
 [Keep API warm](.github/workflows/keep-warm.yml) requests `/health` every ten
