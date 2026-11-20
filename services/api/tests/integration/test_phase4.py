@@ -38,6 +38,39 @@ def project(client: TestClient, headers: dict[str, str]) -> str:
     return f"/api/v1/projects/{response.json()['id']}"
 
 
+@pytest.mark.parametrize(
+    "kind,key", [("deployment", "release"), ("observability", "response")]
+)
+def test_edited_operations_plans_keep_legacy_keys_until_explicit_overwrite(
+    client: TestClient, kind: str, key: str
+) -> None:
+    owner = token()
+    base = project(client, owner) + "/artefacts"
+    response = client.post(base + "/generate", headers=owner, json={"kinds": [kind]})
+    assert response.status_code == 200, response.text
+    item = response.json()[0]
+    legacy = [
+        {"key": key, "heading": "Reviewed plan", "body": "Keep the approved runbook"}
+    ]
+    assert (
+        client.patch(
+            base + "/" + item["id"], headers=owner, json={"sections": legacy}
+        ).status_code
+        == 200
+    )
+    preserved = client.post(
+        base + "/generate", headers=owner, json={"kinds": [kind]}
+    ).json()[0]
+    assert preserved["sections"] == legacy and preserved["edited"]
+    replaced = client.post(
+        base + "/generate",
+        headers=owner,
+        json={"kinds": [kind], "overwrite_edited": True},
+    ).json()[0]
+    assert not replaced["edited"] and len(replaced["sections"]) > 3
+    assert key in {section["key"] for section in replaced["sections"]}
+
+
 def test_specifications_generation_edit_adr_export(client: TestClient) -> None:
     owner = token()
     base = project(client, owner)
@@ -85,6 +118,16 @@ def test_specifications_generation_edit_adr_export(client: TestClient) -> None:
     assert items[0]["context"]["name"] == "Orbit"
     assert items[0]["context"]["requirements"][0]["title"]
     assert items[0]["context"]["technologies"]["database"]
+    assert items[0]["context"]["signals"]["data_shape"] == "relational"
+    assert items[0]["context"]["technology_details"]["hosting"]["constraints"]
+    operations = client.post(base + "/operations/generate", headers=owner, json={})
+    assert operations.status_code == 200, operations.text
+    observability = next(a for a in items if a["kind"] == "observability")
+    objectives = next(
+        s["body"] for s in observability["sections"] if s["key"] == "slo_candidates"
+    )
+    for slo in operations.json()["slos"]:
+        assert slo["target"] in objectives and slo["rationale"] in objectives
     second = client.post(url + "/generate", headers=owner, json={}).json()
     assert [(a["id"], a["sections"], a["context"]) for a in items] == [
         (a["id"], a["sections"], a["context"]) for a in second

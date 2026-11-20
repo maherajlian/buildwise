@@ -4,6 +4,8 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
+from app.core.operational_rules import generate_slos
+from app.modules.operations.generator import generate as generate_operations
 from app.modules.planning.models import PlanTask
 from app.modules.planning.schemas import (
     EpicRead,
@@ -117,6 +119,133 @@ def test_empty_templates_and_validation() -> None:
     ]:
         with pytest.raises(ValidationError):
             Edit.model_validate(bad)
+
+
+def test_project_specific_release_and_observability_plans_share_slo_rules() -> None:
+    ctx = context()
+    ctx["technologies"].update(
+        {
+            "frontend": "Next.js static export",
+            "hosting": "Render Free",
+            "auth": "OIDC provider",
+            "cache_queue": "Managed Redis",
+            "ci_cd": "GitHub Actions",
+        }
+    )
+    ctx["technology_details"] = {
+        "hosting": {
+            "constraints": ["Service sleeps after inactivity", "Ephemeral filesystem"],
+            "operational_burden": "Review resource quotas.",
+            "cost_category": "free-tier",
+            "cost_note": "pricing/free-tier claims require verification",
+        }
+    }
+    ctx["discovery"]["integrations"] = ["SMS provider", "Email provider"]
+    ctx["signals"] = {
+        "auth_needs": "enterprise_sso",
+        "scale": "large",
+        "ops_capability": "high",
+        "background_jobs": "yes",
+        "realtime": "yes",
+    }
+    original = str(ctx)
+    deployment = {s["key"]: s["body"] for s in template("deployment", ctx)}
+    obs = {s["key"]: s["body"] for s in template("observability", ctx)}
+    assert {"target_stack", "release", "rollback"} <= deployment.keys()
+    assert {"stack", "signals", "service_objectives", "response"} <= obs.keys()
+    assert "Render Free" in deployment["hosting_target_and_limitations"]
+    assert "Ephemeral filesystem" in deployment["hosting_target_and_limitations"]
+    assert "keep-warm" in deployment["hosting_target_and_limitations"].lower()
+    assert "upgrade path" in deployment["hosting_target_and_limitations"]
+    assert all(
+        value in deployment["environment_variables"]
+        for value in (
+            "DATABASE_URL",
+            "AUTH_SECRET",
+            "AUTH_CLIENT_SECRET",
+            "OTEL_EXPORTER_OTLP_ENDPOINT",
+            "INTEGRATION_SMS_PROVIDER_API_KEY",
+            "INTEGRATION_EMAIL_PROVIDER_API_KEY",
+            "QUEUE_URL",
+        )
+    )
+    assert "NEXT_PUBLIC_*" in deployment["secret_management"]
+    assert "rotate" in deployment["secret_management"]
+    assert all(
+        value in deployment["release"]
+        for value in (
+            "Lint",
+            "unit",
+            "Integration",
+            "contract",
+            "end-to-end",
+            "Security scan",
+            "Migrate",
+            "Deploy",
+            "/health + /ready",
+            "Rollback",
+            "GitHub Actions",
+        )
+    )
+    assert "schema compatibility" in deployment["rollback"]
+    assert "503" in deployment["health_and_readiness"]
+    assert "PostgreSQL" in deployment["health_and_readiness"]
+    assert "trace/span IDs" in obs["signals"] and "Redact" in obs["signals"]
+    assert "Fast scheduling" in obs["metrics"] and "200ms" in obs["metrics"]
+    assert "queue depth" in obs["metrics"] and "freshness" in obs["metrics"]
+    assert (
+        "FastAPI" in obs["distributed_tracing"]
+        and "PostgreSQL" in obs["distributed_tracing"]
+    )
+    assert "Email provider" in obs["distributed_tracing"]
+    assert "privacy budgets" in obs["distributed_tracing"]
+    slos = generate_slos(ctx, ctx["signals"])
+    assert slos == generate_operations(ctx, ctx["signals"])["slos"]
+    for slo in slos:
+        assert all(
+            slo[key] in obs["slo_candidates"]
+            for key in ("name", "sli", "target", "window", "alert", "rationale")
+        )
+    assert "99.9%" in obs["slo_candidates"] and "p95 < 200ms" in obs["slo_candidates"]
+    assert all(
+        value in obs["response"]
+        for value in (
+            "Render Free",
+            "PostgreSQL",
+            "Email provider",
+            "SMS provider",
+            "CORS",
+            "lost browser token",
+            "Managed Redis",
+            "vendor status",
+            "rollback",
+        )
+    )
+    assert original == str(ctx)
+    assert template("observability", ctx) == template("observability", ctx)
+
+
+def test_plans_handle_static_no_auth_and_normalize_integration_variable_names() -> None:
+    ctx: dict[str, Any] = {
+        "name": "Static site",
+        "technologies": {"frontend": "Static HTML", "hosting": "Paid CDN"},
+        "signals": {"auth_needs": "none", "background_jobs": "no"},
+        "discovery": {"integrations": ["a-b", "a b", "123"]},
+    }
+    sections = {s["key"]: s["body"] for s in template("deployment", ctx)}
+    env = sections["environment_variables"]
+    assert (
+        "DATABASE_URL" not in env
+        and "AUTH_SECRET" not in env
+        and "QUEUE_URL" not in env
+    )
+    assert "INTEGRATION_A_B_API_KEY" in env and "INTEGRATION_A_B_2_API_KEY" in env
+    assert "INTEGRATION_123_API_KEY" in env
+    assert "No API is selected" in sections["health_and_readiness"]
+    assert "do not assume" in sections["hosting_target_and_limitations"]
+    assert "TODO" in str(template("observability", {"name": "Empty"}))
+    reversed_ctx = {**ctx, "discovery": {"integrations": ["123", "a b", "a-b"]}}
+    assert template("deployment", ctx) == template("deployment", reversed_ctx)
 
 
 def task(key: str, **kwargs: Any) -> PlanTask:

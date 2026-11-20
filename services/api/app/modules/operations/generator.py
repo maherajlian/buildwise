@@ -3,6 +3,7 @@ import io
 import re
 from typing import Any
 
+from app.core.operational_rules import generate_slos, requirement_text
 from app.modules.operations.schemas import OperationsRead
 
 SECURITY = re.compile(
@@ -11,28 +12,87 @@ SECURITY = re.compile(
 PERFORMANCE = re.compile(
     r"latency|throughput|load|users|scale|performance|\bp95\b", re.I
 )
+COST = re.compile(r"\bcosts?\b|\bpric(?:e|es|ing)\b|\bbudget\b|\bSMS\b", re.I)
+COMPLIANCE = re.compile(r"GDPR|compliance|regulat|\bDPA\b", re.I)
 NUMBERS = re.compile(
     r"\d+(?:\.\d+)?\s*(?:ms|milliseconds?|seconds?|s\b|users|requests?/?s|rps)", re.I
-)
-LATENCY = re.compile(r"\d+(?:\.\d+)?\s*(?:ms\b|milliseconds?\b|seconds?\b|s\b)", re.I)
-ALERT = (
-    "Recommend multi-window burn-rate alerts against the error budget: "
-    "page at 14.4x over 1h and 5m; ticket at 6x over 6h and 30m. "
-    "Review thresholds and ownership before adoption."
 )
 HEADER = (
     "Generated deterministically from requirements; suggestions require human review."
 )
 
 
-def requirement_text(requirement: dict[str, Any]) -> str:
-    return " ".join(
-        [
-            requirement["title"],
-            requirement.get("description", ""),
-            *requirement.get("acceptance_criteria", []),
-        ]
+def risk_controls(
+    category: str,
+    source: str,
+    subject: str,
+    signals: dict[str, Any],
+    integration_count: int,
+    requirement: dict[str, Any] | None,
+) -> tuple[str, int, int]:
+    controls = {
+        "technical": "Prototype the failure path and add a regression test "
+        "before release.",
+        "security": "Threat model trust boundaries; add authorization and cross-owner "
+        "access tests, least-privilege controls and secret rotation.",
+        "operational": "Document recovery steps, assign an incident owner "
+        "and test alerts.",
+        "delivery": "Assign an owner, track the dependency and review it "
+        "at each milestone.",
+        "compliance": "Create a personal-data map; review the DPA, retention/deletion "
+        "policy and access logging with the accountable privacy owner.",
+        "cost": "Estimate usage-based costs; set usage caps and budget alerts, "
+        "including SMS spend, and review provider pricing before launch.",
+    }
+    actions = {
+        "integrations": f"For {subject}: configure timeouts, bounded retries "
+        "with backoff, "
+        "a fallback or durable queue, contract tests and vendor status monitoring.",
+        "assumptions": f"Before build, assign a validation owner to test '{subject}' "
+        "with stakeholders or a prototype; record evidence and a go/no-go decision.",
+        "open_questions": f"Assign a decision owner for '{subject}'; "
+        "resolve and record "
+        "the decision before the next implementation milestone.",
+        "constraints": f"Turn '{subject}' into a release acceptance check and review "
+        "it with the constraint owner before implementation.",
+        "hosting": f"For {subject}: verify cold-start/sleep behavior and free-tier "
+        "quotas; use keep-warm probes only where provider terms permit, set quota "
+        "alerts and document an upgrade path before capacity is exhausted.",
+        "ops": "Prefer managed services; rehearse a recovery runbook, configure "
+        "actionable alerting and assign a primary and backup incident owner.",
+        "performance_nfr": f"Load test '{subject}' with representative concurrency; "
+        "enforce its latency/throughput budget in CI and profile bottlenecks.",
+        "security_nfr": f"Threat model '{subject}' and enforce it with authorization, "
+        "cross-owner and abuse-case regression tests before deployment.",
+    }
+    mitigation = " ".join(filter(None, [actions.get(source), controls[category]]))
+    likelihood = {"constraints": 2, "integrations": 2, "hosting": 4, "ops": 4}.get(
+        source, 3
     )
+    if source == "integrations" and integration_count >= 3:
+        likelihood += 1
+    if signals.get("ops_capability", "low") == "low" and source in (
+        "integrations",
+        "security_nfr",
+        "performance_nfr",
+    ):
+        likelihood += 1
+    if signals.get("ops_capability") == "high" and category in (
+        "technical",
+        "operational",
+    ):
+        likelihood -= 1
+    impact = {"security": 4, "compliance": 5, "operational": 4, "delivery": 4}.get(
+        category, 3
+    )
+    priority = requirement.get("priority") if requirement else None
+    if priority == "P0":
+        impact = 5
+    elif priority == "P2" and category != "compliance":
+        impact -= 1
+    if signals.get("scale") == "large":
+        impact += 1
+    return mitigation, max(1, min(5, likelihood)), max(1, min(5, impact))
 
 
 def generate(
@@ -48,9 +108,11 @@ def generate(
         ),
     )
     technologies = context.get("technologies", {})
+    integration_count = len(
+        set(answers.get("integrations", []) + signals.get("integrations", []))
+    )
     tests: list[dict[str, Any]] = []
     risks: list[dict[str, Any]] = []
-    slos: list[dict[str, Any]] = []
 
     def test(
         category: str,
@@ -79,39 +141,29 @@ def generate(
         category: str,
         rationale: str,
         requirement: dict[str, Any] | None = None,
+        source: str = "risks",
     ) -> None:
+        category = (
+            "compliance"
+            if COMPLIANCE.search(description)
+            else "cost"
+            if COST.search(description)
+            else category
+        )
+        mitigation, likelihood, impact = risk_controls(
+            category, source, title, signals, integration_count, requirement
+        )
         risks.append(
             dict(
                 title=title[:200],
                 description=description,
                 category=category,
-                likelihood=4 if category in ("operational", "cost") else 3,
-                impact=5 if category in ("security", "compliance") else 3,
-                mitigation="Validate the assumption, assign an owner "
-                "and review mitigation before release.",
+                likelihood=likelihood,
+                impact=impact,
+                mitigation=mitigation,
                 owner="",
                 status="open",
                 rationale=rationale,
-                requirement_id=requirement.get("id") if requirement else None,
-            )
-        )
-
-    def slo(
-        name: str,
-        sli: str,
-        target: str,
-        rationale: str,
-        requirement: dict[str, Any] | None = None,
-    ) -> None:
-        slos.append(
-            dict(
-                name=name,
-                sli=sli,
-                target=target[:500],
-                window="28 days",
-                alert=ALERT,
-                rationale=rationale,
-                status="suggested",
                 requirement_id=requirement.get("id") if requirement else None,
             )
         )
@@ -156,6 +208,7 @@ def generate(
                     "security",
                     rationale,
                     req,
+                    source="security_nfr",
                 )
             if PERFORMANCE.search(text):
                 measurements = ", ".join(NUMBERS.findall(text))
@@ -171,6 +224,17 @@ def generate(
                     f"Performance budget missed: {req['title']}",
                     text,
                     "technical",
+                    rationale,
+                    req,
+                    source="performance_nfr",
+                )
+            if COST.search(text) and not (
+                SECURITY.search(text) or PERFORMANCE.search(text)
+            ):
+                risk(
+                    f"Usage cost exceeds budget: {req['title']}",
+                    text,
+                    "cost",
                     rationale,
                     req,
                 )
@@ -271,7 +335,7 @@ def generate(
                 if re.search(r"GDPR|compliance", answer, re.I)
                 else ("security" if SECURITY.search(answer) else category)
             )
-            risk(title, answer, selected, f"Discovery {field}: {answer}.")
+            risk(title, answer, selected, f"Discovery {field}: {answer}.", source=field)
     hosting = technologies.get("hosting")
     if hosting:
         risk(
@@ -281,74 +345,22 @@ def generate(
             "cost",
             f"Recommended hosting: {hosting}; "
             "pricing/free-tier claims require verification.",
+            source="hosting",
         )
     ops = signals.get("ops_capability", "low")
-    scale = signals.get("scale", "small")
     if ops == "low":
         risk(
             "Limited operational capacity",
             "Recovery, patching and incident response may exceed team capacity.",
             "operational",
             "Recommendation signal ops_capability=low.",
+            source="ops",
         )
-    target = "99.9%" if scale == "large" and ops != "low" else "99.5%"
-    slo(
-        "Availability",
-        "Successful eligible requests / total eligible requests; "
-        "exclude documented client errors.",
-        target,
-        f"Recommendation signals scale={scale}, ops_capability={ops}; "
-        "proposed, not a measured guarantee.",
-    )
-    latency_req = next(
-        (
-            r
-            for r in requirements
-            if r["type"] == "non_functional" and LATENCY.search(requirement_text(r))
-        ),
-        None,
-    )
-    match = LATENCY.search(requirement_text(latency_req)) if latency_req else None
-    slo(
-        "Request latency",
-        "p95 server request duration over eligible requests.",
-        f"p95 < {match.group()}" if match else "p95 < 500 ms",
-        f"NFR: {latency_req['title']}; {requirement_text(latency_req)}"
-        if latency_req
-        else "Default latency suggestion; no numeric latency NFR supplied.",
-        latency_req,
-    )
-    slo(
-        "Error rate",
-        "Server errors / total eligible requests.",
-        "< 1%",
-        f"Default error-budget suggestion for scale={scale}; "
-        "review against requirements.",
-    )
-    if technologies.get("backend"):
-        slo(
-            "Readiness",
-            "Successful readiness probes / total probes, "
-            "including required dependency checks.",
-            ">= 99.5%",
-            f"Recommended backend: {technologies['backend']}; "
-            "prevent traffic to unready instances.",
-        )
-    if signals.get("background_jobs") in (True, "yes"):
-        slo(
-            "Background-job completion",
-            "Jobs completed successfully before their documented deadline / jobs due.",
-            ">= 99%",
-            "Recommendation signal background_jobs=yes; agree job-specific deadlines.",
-        )
-    if signals.get("realtime") in (True, "yes"):
-        slo(
-            "Data freshness",
-            "Updates delivered within 5 seconds / updates emitted.",
-            ">= 99% within 5 s",
-            "Recommendation signal realtime=yes; validate freshness budget with users.",
-        )
-    return {"test_cases": tests, "risks": risks, "slos": slos}
+    return {
+        "test_cases": tests,
+        "risks": risks,
+        "slos": generate_slos(context, signals),
+    }
 
 
 def markdown(data: OperationsRead, kinds: list[str] | None = None) -> str:

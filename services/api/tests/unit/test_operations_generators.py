@@ -115,6 +115,95 @@ def test_requirement_rules_numbers_and_determinism() -> None:
     )
 
 
+def test_risk_controls_are_source_specific_and_scores_are_bounded() -> None:
+    ctx = context()
+    ctx["discovery"]["integrations"] = ["Email provider", "SMS gateway", "Calendar"]
+    risks = generate(ctx, {"ops_capability": "low"})["risks"]
+
+    def find(title: str) -> dict[str, Any]:
+        return next(r for r in risks if title in r["title"])
+
+    dependency = find("Third-party dependency: Email")
+    assert all(
+        word in dependency["mitigation"]
+        for word in (
+            "timeouts",
+            "retries",
+            "fallback",
+            "queue",
+            "contract tests",
+            "vendor status",
+        )
+    )
+    assert dependency["likelihood"] == 4
+    compliance = find("GDPR")
+    assert compliance["category"] == "compliance" and compliance["impact"] == 5
+    assert all(
+        word in compliance["mitigation"]
+        for word in ("data map", "DPA", "retention/deletion", "access logging")
+    )
+    assert "Before build" in find("Assumption proves false")["mitigation"]
+    assert "Stable internet" in find("Assumption proves false")["mitigation"]
+    assert "decision owner" in find("Launch date?")["mitigation"]
+    assert "milestone" in find("Launch date?")["mitigation"]
+    assert all(
+        word in find("Hosting free-tier")["mitigation"]
+        for word in ("cold-start", "keep-warm", "quota", "upgrade path")
+    )
+    assert all(
+        word in find("Limited operational")["mitigation"]
+        for word in ("managed services", "runbook", "alerting")
+    )
+    assert "Threat model" in find("Security control")["mitigation"]
+    assert "authorization" in find("Security control")["mitigation"]
+    assert "Load test" in find("Performance budget")["mitigation"]
+    assert "CI" in find("Performance budget")["mitigation"]
+    sms = find("Third-party dependency: SMS")
+    assert sms["category"] == "cost" and "usage caps" in sms["mitigation"]
+    assert len({r["mitigation"] for r in risks}) > 5
+    assert len({(r["likelihood"], r["impact"]) for r in risks}) > 3
+
+
+@pytest.mark.parametrize("keyword", ["cost", "price", "pricing", "budget", "SMS"])
+def test_cost_risks_include_spend_controls(keyword: str) -> None:
+    result = generate(
+        {"discovery": {"risks": [f"Unexpected {keyword}"]}}, {"ops_capability": "high"}
+    )
+    risk = result["risks"][0]
+    assert risk["category"] == "cost"
+    assert "usage caps" in risk["mitigation"] and "budget alerts" in risk["mitigation"]
+
+
+def test_risk_scoring_uses_priority_scale_integrations_and_ops() -> None:
+    ctx = {
+        "discovery": {"integrations": ["Email"]},
+        "requirements": [
+            {
+                "title": "Protect data",
+                "type": "non_functional",
+                "priority": "P0",
+                "description": "Security authorization",
+                "acceptance_criteria": [],
+            },
+            {
+                "title": "Limit cost",
+                "type": "non_functional",
+                "priority": "P2",
+                "description": "Monthly spending",
+                "acceptance_criteria": [],
+            },
+        ],
+    }
+    low = generate(ctx, {"ops_capability": "low"})["risks"]
+    high = generate(ctx, {"ops_capability": "high"})["risks"]
+    assert low[0]["impact"] == 5
+    assert low[1]["impact"] == 2
+    assert low[2]["likelihood"] > high[2]["likelihood"]
+    large = generate(ctx, {"ops_capability": "high", "scale": "large"})["risks"]
+    assert large[2]["impact"] > high[2]["impact"]
+    assert all(1 <= r["likelihood"] <= 5 and 1 <= r["impact"] <= 5 for r in large)
+
+
 @pytest.mark.parametrize(
     "ai,enabled",
     [

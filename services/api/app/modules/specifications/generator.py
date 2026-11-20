@@ -9,6 +9,7 @@ from app.modules.recommendations.engine import recommend
 from app.modules.recommendations.router import effective
 from app.modules.recommendations.schemas import Catalogue
 from app.modules.specifications.models import Artefact
+from app.modules.specifications.operations_plans import plan_layouts
 from app.modules.specifications.schemas import KINDS, Kind
 
 TITLES = {
@@ -60,6 +61,17 @@ def snapshot(
             for r in result.recommendations
             if r.recommendation is not None
         },
+        "signals": {signal.id: signal.value for signal in signals},
+        "technology_details": {
+            r.category: {
+                "constraints": r.recommendation.constraints,
+                "operational_burden": r.recommendation.operational_burden,
+                "cost_category": r.recommendation.cost_category,
+                "cost_note": r.recommendation.cost_note,
+            }
+            for r in result.recommendations
+            if r.recommendation is not None
+        },
         "catalogue_version": result.catalogue_version,
         "rules_version": result.rules_version,
     }
@@ -70,6 +82,11 @@ def bullets(items: list[str]) -> str:
 
 
 def template(kind: Kind, context: dict[str, Any]) -> list[dict[str, str]]:
+    if kind in ("deployment", "observability"):
+        return [
+            {"key": heading.lower().replace(" ", "_"), "heading": heading, "body": body}
+            for heading, body in plan_layouts(context)[kind]
+        ]
     answers = context.get("discovery", {})
     reqs = context.get("requirements", [])
     name = context["name"]
@@ -204,33 +221,6 @@ def template(kind: Kind, context: dict[str, Any]) -> list[dict[str, str]]:
             (
                 "Exit criteria",
                 "TODO: agree coverage, performance budgets and release sign-off.",
-            ),
-        ],
-        "deployment": [
-            ("Target stack", technologies),
-            (
-                "Release",
-                f"For {name}: run checks, build immutable artefacts, "
-                "apply migrations and verify health before traffic.",
-            ),
-            (
-                "Rollback",
-                "Back up data and test restore. TODO: define rollback triggers, "
-                "ownership and migration compatibility.",
-            ),
-        ],
-        "observability": [
-            ("Stack", technologies),
-            (
-                "Signals",
-                f"Instrument {name} with correlated structured logs, traces and "
-                "request/error/latency metrics. Never log secrets or personal data.",
-            ),
-            ("Service objectives", nfr),
-            (
-                "Response",
-                "TODO: define dashboards, alert thresholds, "
-                "on-call owner and runbooks.",
             ),
         ],
     }

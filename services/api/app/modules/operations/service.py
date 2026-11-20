@@ -11,7 +11,6 @@ from app.modules.operations import generator
 from app.modules.operations.models import SLO, Risk, TestCase
 from app.modules.operations.schemas import OperationsRead, RiskRead, SLORead, TestRead
 from app.modules.projects.models import Project, Requirement
-from app.modules.recommendations.router import effective
 from app.modules.recommendations.schemas import Catalogue
 from app.modules.specifications.generator import snapshot
 
@@ -60,8 +59,7 @@ def generate(
     replace_edited: bool = False,
 ) -> OperationsRead:
     context = snapshot(session, project, catalogue)
-    _, signals, _ = effective(session, project.id)
-    data = generator.generate(context, {signal.id: signal.value for signal in signals})
+    data = generator.generate(context, context["signals"])
     for kind in dict.fromkeys(kinds or MODELS):
         model = MODELS[kind]
         statement = delete(model).where(
