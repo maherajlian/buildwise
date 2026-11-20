@@ -16,9 +16,11 @@ export function Projects() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<ApiError>();
   const [notice, setNotice] = useState("");
+  const [canRetry, setCanRetry] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  function failure(cause: unknown) {
+  function failure(cause: unknown, loading = false) {
+    setCanRetry(loading);
     setError(
       cause instanceof ApiError
         ? cause
@@ -37,7 +39,7 @@ export function Projects() {
           setCursor(result.next_cursor);
         }
       } catch (cause) {
-        if (!disposed) failure(cause);
+        if (!disposed) failure(cause, true);
       } finally {
         if (!disposed) setLoading(false);
       }
@@ -63,7 +65,7 @@ export function Projects() {
       );
       setCursor(result.next_cursor);
     } catch (cause) {
-      failure(cause);
+      failure(cause, true);
     } finally {
       setLoading(false);
     }
@@ -71,6 +73,7 @@ export function Projects() {
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!name.trim()) {
+      setCanRetry(false);
       setError(requiredError("name", "Project name"));
       document.getElementById("name")?.focus();
       return;
@@ -106,9 +109,11 @@ export function Projects() {
           {error.correlationId && (
             <p className="break-all">Correlation ID: {error.correlationId}</p>
           )}
-          <Button variant="outline" size="sm" onClick={() => void loadMore()}>
-            Retry loading projects
-          </Button>
+          {canRetry && (
+            <Button variant="outline" size="sm" onClick={() => void loadMore()}>
+              Retry loading projects
+            </Button>
+          )}
         </div>
       )}
       <div className="projects-grid">

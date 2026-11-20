@@ -111,6 +111,9 @@ describe("projects", () => {
       "true",
     );
     expect(create).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole("button", { name: "Retry loading projects" }),
+    ).not.toBeInTheDocument();
   });
   it("links to project workspaces and the sample", async () => {
     vi.spyOn(api, "projects").mockResolvedValue({

@@ -231,6 +231,8 @@ describe("project workspace", () => {
       expect.objectContaining({ status: "confirmed" }),
     );
     expect(await screen.findByText("confirmed")).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText("Show"), "non_functional");
+    expect(screen.getByText("No matching requirements")).toBeInTheDocument();
   });
   it("shows the sample read-only", async () => {
     open("id=sample&tab=requirements");

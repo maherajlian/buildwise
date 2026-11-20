@@ -169,8 +169,19 @@ export function Requirements({
             <span className="empty-icon">
               <ListChecks size={28} />
             </span>
-            <h3>No requirements yet</h3>
-            <p>Capture what the system must do and how well it must do it.</p>
+            {items.length ? (
+              <>
+                <h3>No matching requirements</h3>
+                <p>Change the filter to see your other requirements.</p>
+              </>
+            ) : (
+              <>
+                <h3>No requirements yet</h3>
+                <p>
+                  Capture what the system must do and how well it must do it.
+                </p>
+              </>
+            )}
           </div>
         )}
         <ul className="requirement-list">
