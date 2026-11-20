@@ -46,8 +46,11 @@ PATTERNS: dict[str, dict[str, str]] = {
         "payments": r"payment|payments|stripe|deposit|deposits",
         "email": r"email",
         "sms": r"SMS|text messages",
-        "calendar": r"calendar",
-        "maps": r"maps|geocoding",
+        "calendar": (
+            r"google calendar|calendar (?:sync\w*|integration\w*|invite\w*|export\w*)"
+            r"|ical(?:endar)?"
+        ),
+        "maps": r"maps|map view|geolocation|geocod\w*|directions",
         "generic_api": r"external API|third.party API|webhook|webhooks",
     },
 }

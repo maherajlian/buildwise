@@ -207,6 +207,39 @@ def test_explicit_budget_phrases_win_over_mvp(phrase: str, expected: str) -> Non
     assert any(phrase in e.excerpt for e in budget.evidence)
 
 
+@pytest.mark.parametrize("text", ["Refunds within 30 calendar days", "Column mapping"])
+def test_nonintegration_calendar_and_mapping_are_ignored(text: str) -> None:
+    signals, _ = derive_signals({"goals": [text]}, [], Overrides())
+    integrations = next(s for s in signals if s.id == "integrations")
+    assert integrations.value == []
+    assert integrations.source == "default"
+    assert integrations.evidence == []
+
+
+@pytest.mark.parametrize(
+    ("text", "kind"),
+    [
+        ("Google Calendar", "calendar"),
+        ("Calendar sync", "calendar"),
+        ("Calendar integration", "calendar"),
+        ("Calendar invites", "calendar"),
+        ("Calendar export", "calendar"),
+        ("iCal", "calendar"),
+        ("Maps", "maps"),
+        ("Map view", "maps"),
+        ("Geolocation", "maps"),
+        ("Geocoding", "maps"),
+        ("Directions", "maps"),
+    ],
+)
+def test_integration_intent_is_detected(text: str, kind: str) -> None:
+    signals, _ = derive_signals({"integrations": [text]}, [], Overrides())
+    integrations = next(s for s in signals if s.id == "integrations")
+    assert integrations.value == [kind]
+    assert integrations.source == "detected"
+    assert integrations.evidence[0].excerpt == text
+
+
 def test_long_evidence_keeps_matched_phrase() -> None:
     signals, _ = derive_signals(
         {"constraints": ["Context " * 80 + "low budget"]}, [], Overrides()
