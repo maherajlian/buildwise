@@ -51,7 +51,7 @@
       {
         "name": "service",
         "label": "Service",
-        "type": "constant",
+        "type": "custom",
         "query": "buildwise-api",
         "options": [{"selected": true, "text": "buildwise-api", "value": "buildwise-api"}],
         "current": {
@@ -79,7 +79,8 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "short",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -99,7 +100,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(increase(buildwise_projects_created_total{job=\"$service\"}[$__range]))",
+          "expr": "round(sum(increase(buildwise_projects_created_total{job=\"$service\"}[$__range])))",
           "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
         }
       ]
@@ -120,7 +121,8 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "short",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -140,7 +142,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(increase(buildwise_discovery_submissions_total{job=\"$service\"}[$__range]))",
+          "expr": "round(sum(increase(buildwise_discovery_submissions_total{job=\"$service\"}[$__range])))",
           "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
         }
       ]
@@ -161,7 +163,8 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "short",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -181,7 +184,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(increase(buildwise_recommendation_runs_total{job=\"$service\"}[$__range]))",
+          "expr": "round(sum(increase(buildwise_recommendation_runs_total{job=\"$service\"}[$__range])))",
           "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
         }
       ]
@@ -202,7 +205,8 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "short",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -222,7 +226,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (buildwise_artifact_type) (increase(buildwise_artifact_generation_total{job=\"$service\"}[$__range]))",
+          "expr": "round(sum by (buildwise_artifact_type) (increase(buildwise_artifact_generation_total{job=\"$service\"}[$__range])))",
           "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
         }
       ]
@@ -243,7 +247,8 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "short",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -263,7 +268,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(increase(buildwise_task_generation_total{job=\"$service\"}[$__range]))",
+          "expr": "round(sum(increase(buildwise_task_generation_total{job=\"$service\"}[$__range])))",
           "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
         }
       ]
@@ -284,7 +289,8 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "short",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -304,7 +310,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(increase(buildwise_export_total{job=\"$service\"}[$__range]))",
+          "expr": "round(sum(increase(buildwise_export_total{job=\"$service\"}[$__range])))",
           "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
         }
       ]

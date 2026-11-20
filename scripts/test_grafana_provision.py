@@ -15,6 +15,45 @@ from grafana_provision import (
 
 
 class ProvisionTests(unittest.TestCase):
+    def test_dashboards_have_a_selected_service_default(self):
+        sources = datasource_map(self.sources)
+        for path in (ROOT / "infra/grafana/dashboards").glob("*.json"):
+            with self.subTest(dashboard=path.stem):
+                dashboard = json.loads(path.read_text())
+                payload = dashboard_payload(dashboard, sources)
+                variable = next(
+                    v
+                    for v in payload["dashboard"]["templating"]["list"]
+                    if v["name"] == "service"
+                )
+                self.assertEqual(variable["type"], "custom")
+                self.assertEqual(variable["query"], "buildwise-api")
+                self.assertEqual(variable["current"]["value"], "buildwise-api")
+                self.assertEqual(variable["current"]["text"], "buildwise-api")
+                self.assertEqual(
+                    variable["options"],
+                    [
+                        {
+                            "selected": True,
+                            "text": "buildwise-api",
+                            "value": "buildwise-api",
+                        }
+                    ],
+                )
+
+    def test_product_counts_are_rounded_to_whole_numbers(self):
+        dashboard = json.loads(
+            (ROOT / "infra/grafana/dashboards/product-operations.json").read_text()
+        )
+        self.assertEqual(len(dashboard["panels"]), 6)
+        for panel in dashboard["panels"]:
+            with self.subTest(panel=panel["title"]):
+                self.assertEqual(panel["fieldConfig"]["defaults"]["decimals"], 0)
+                for target in panel["targets"]:
+                    self.assertTrue(target["expr"].startswith("round("))
+                    self.assertTrue(target["expr"].endswith("))"))
+                    self.assertIn("increase(", target["expr"])
+
     def test_error_queries_have_zero_defaults_and_keep_traffic_guards(self):
         dashboard = json.loads(
             (ROOT / "infra/grafana/dashboards/service-overview.json").read_text()
@@ -75,6 +114,29 @@ class ProvisionTests(unittest.TestCase):
         self.assertEqual(
             datasource_map(self.sources + [alternative])["prometheus"]["uid"],
             "cloud-prometheus",
+        )
+
+    def test_cloud_canonical_sources_disambiguate_internal_sources(self):
+        sources = [
+            {"type": kind, "uid": uid}
+            for kind, uid in (
+                ("prometheus", "grafanacloud-prom"),
+                ("loki", "grafanacloud-logs"),
+                ("tempo", "grafanacloud-traces"),
+                ("prometheus", "grafanacloud-usage"),
+                ("loki", "grafanacloud-alert-state-history"),
+                ("loki", "grafanacloud-usage-insights"),
+            )
+        ]
+        self.assertEqual(datasource_map(sources)["loki"]["uid"], "grafanacloud-logs")
+        self.assertEqual(
+            datasource_map(sources)["prometheus"]["uid"], "grafanacloud-prom"
+        )
+        with self.assertRaises(ValueError):
+            datasource_map(sources + [sources[1]])
+        sources[-1]["isDefault"] = True
+        self.assertEqual(
+            datasource_map(sources)["loki"]["uid"], "grafanacloud-usage-insights"
         )
 
     def test_creates_folder_and_is_idempotent(self):

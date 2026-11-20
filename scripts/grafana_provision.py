@@ -12,6 +12,11 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 FOLDER_UID = "buildwise-observability"
+CLOUD_DATASOURCES = {
+    "prometheus": "grafanacloud-prom",
+    "loki": "grafanacloud-logs",
+    "tempo": "grafanacloud-traces",
+}
 
 
 def datasource_map(sources: list[dict]) -> dict[str, dict]:
@@ -19,10 +24,15 @@ def datasource_map(sources: list[dict]) -> dict[str, dict]:
     for kind in ("prometheus", "loki", "tempo"):
         matches = [source for source in sources if source["type"] == kind]
         defaults = [source for source in matches if source.get("isDefault")]
+        cloud = [
+            source for source in matches if source["uid"] == CLOUD_DATASOURCES[kind]
+        ]
         if len(matches) == 1:
             selected[kind] = matches[0]
         elif len(defaults) == 1:
             selected[kind] = defaults[0]
+        elif not defaults and len(cloud) == 1:
+            selected[kind] = cloud[0]
         else:
             raise ValueError(f"Expected one {kind} datasource (or one default)")
     return selected
@@ -113,7 +123,8 @@ def provision(client: Grafana) -> None:
     for group in config["groups"]:
         client.request(
             "PUT",
-            f"/api/v1/provisioning/folder/{FOLDER_UID}/rule-groups/{quote(group['name'], safe='')}",
+            f"/api/v1/provisioning/folder/{FOLDER_UID}/rule-groups/"
+            + quote(group["name"], safe=""),
             alert_payload(group, sources),
         )
         print("Provisioned alert group:", group["name"])
