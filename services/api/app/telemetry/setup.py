@@ -40,6 +40,22 @@ class JsonFormatter(logging.Formatter):
         )
 
 
+class ExportFailureFilter(logging.Filter):
+    def __init__(self) -> None:
+        super().__init__()
+        self.reported = False
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if self.reported:
+            return False
+        self.reported = True
+        record.msg = "telemetry_export_failed"
+        record.args = ()
+        record.exc_info = None
+        record.exc_text = None
+        return True
+
+
 @dataclass
 class Telemetry:
     traces: TracerProvider
@@ -56,6 +72,13 @@ class Telemetry:
 
 
 def configure_telemetry(settings: Settings) -> Telemetry:
+    export_logger = logging.getLogger("opentelemetry")
+    export_logger.handlers.clear()
+    export_logger.propagate = False
+    export_stream = logging.StreamHandler()
+    export_stream.setFormatter(JsonFormatter(settings))
+    export_stream.addFilter(ExportFailureFilter())
+    export_logger.addHandler(export_stream)
     resource = Resource.create(
         {
             "service.name": settings.otel_service_name,
