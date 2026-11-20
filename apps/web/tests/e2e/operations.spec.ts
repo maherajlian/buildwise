@@ -61,6 +61,18 @@ test("generate a requirement-based plan, record evidence, edit a risk and export
     .fill("Rehearse recovery and document the runbook before launch.");
   await risk.getByRole("button", { name: "Save risk", exact: true }).click();
   await expect(risk).toContainText("Launch team");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const table = page.getByRole("region", { name: "Risk register table" });
+  const singleLine = await table
+    .locator("thead th, td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(6), .risk-score")
+    .evaluateAll((cells) =>
+      cells.every((cell) => {
+        const range = document.createRange();
+        range.selectNodeContents(cell);
+        return range.getClientRects().length === 1;
+      }),
+    );
+  expect(singleLine).toBe(true);
   const downloadEvent = page.waitForEvent("download");
   await page
     .getByRole("button", {
@@ -88,5 +100,11 @@ test("generate a requirement-based plan, record evidence, edit a risk and export
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
+  ).toBe(true);
+  expect(
+    await table.evaluate((element) => {
+      element.scrollLeft = element.scrollWidth;
+      return element.scrollWidth > element.clientWidth && element.scrollLeft > 0;
+    }),
   ).toBe(true);
 });
