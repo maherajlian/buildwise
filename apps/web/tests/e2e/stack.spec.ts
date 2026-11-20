@@ -18,6 +18,43 @@ test("real API health and readiness", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("dashboard detects an outage and recovers without reloading", async ({
+  page,
+}) => {
+  await page.clock.install();
+  let offline = false;
+  let failedProbes = 0;
+  await page.route("**/health", async (route) => {
+    if (!offline) return route.continue();
+    failedProbes++;
+    await route.fulfill({
+      status: 503,
+      headers: { "Access-Control-Allow-Origin": "http://localhost:3000" },
+      json: {
+        error: {
+          code: "unavailable",
+          message: "Simulated outage",
+          correlation_id: "outage-test",
+        },
+      },
+    });
+  });
+  await page.goto("/");
+  await expect(page.getByText("All systems ready")).toBeVisible();
+  offline = true;
+  await page.clock.fastForward(30000);
+  await expect(page.getByText("Waking the API")).toBeVisible();
+  for (let attempt = 2; attempt <= 4; attempt++) {
+    await page.clock.fastForward(5000);
+    await expect.poll(() => failedProbes).toBe(attempt);
+    await page.clock.runFor(100);
+  }
+  await expect(page.getByText("API currently unavailable")).toBeVisible();
+  offline = false;
+  await page.clock.fastForward(30000);
+  await expect(page.getByText("All systems ready")).toBeVisible();
+});
+
 test("create and list a browser-owned project through the real stack", async ({
   page,
 }) => {
