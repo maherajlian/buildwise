@@ -25,11 +25,22 @@ services:
       OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:-}
       OTEL_TRACES_SAMPLER: parentbased_traceidratio
       OTEL_TRACES_SAMPLER_ARG: ${OTEL_TRACES_SAMPLER_ARG:-0.1}
+      FAULT_INJECTION: ${FAULT_INJECTION:-}
       PORT: "8000"
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
+  lgtm:
+    image: grafana/otel-lgtm:0.11.0
+    profiles: [observability]
+    ports:
+      - "127.0.0.1:3001:3000"
+      - "127.0.0.1:4318:4318"
+    volumes:
+      - ./infra/grafana/dashboards:/otel-lgtm/buildwise-dashboards:ro
+      - ./infra/grafana/provisioning/dashboards/buildwise.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/buildwise.yaml:ro
+      - ./infra/grafana/alerts:/otel-lgtm/grafana/conf/provisioning/alerting:ro
 volumes:
   postgres_data:

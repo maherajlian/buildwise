@@ -1,0 +1,313 @@
+{
+  "uid": "buildwise-product-operations",
+  "title": "BuildWise / Product Operations",
+  "tags": [
+    "buildwise"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "DS_PROMETHEUS",
+        "label": "Prometheus",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {
+          "text": "Prometheus",
+          "value": "prometheus"
+        },
+        "refresh": 1
+      },
+      {
+        "name": "DS_LOKI",
+        "label": "Loki",
+        "type": "datasource",
+        "query": "loki",
+        "current": {
+          "text": "Loki",
+          "value": "loki"
+        },
+        "refresh": 1
+      },
+      {
+        "name": "DS_TEMPO",
+        "label": "Tempo",
+        "type": "datasource",
+        "query": "tempo",
+        "current": {
+          "text": "Tempo",
+          "value": "tempo"
+        },
+        "refresh": 1
+      },
+      {
+        "name": "service",
+        "label": "Service",
+        "type": "constant",
+        "query": "buildwise-api",
+        "options": [{"selected": true, "text": "buildwise-api", "value": "buildwise-api"}],
+        "current": {
+          "text": "buildwise-api",
+          "value": "buildwise-api"
+        },
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Projects created",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(buildwise_projects_created_total{job=\"$service\"}[$__range]))",
+          "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Discovery submissions",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(buildwise_discovery_submissions_total{job=\"$service\"}[$__range]))",
+          "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Recommendation runs",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(buildwise_recommendation_runs_total{job=\"$service\"}[$__range]))",
+          "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Artefacts by type",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (buildwise_artifact_type) (increase(buildwise_artifact_generation_total{job=\"$service\"}[$__range]))",
+          "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Task generation runs",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(buildwise_task_generation_total{job=\"$service\"}[$__range]))",
+          "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Markdown exports",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(buildwise_export_total{job=\"$service\"}[$__range]))",
+          "legendFormat": "{{http_response_status_code}}{{buildwise_artifact_type}}{{buildwise_operation}}{{error_type}}{{state}}{{statement_verb}}"
+        }
+      ]
+    }
+  ]
+}

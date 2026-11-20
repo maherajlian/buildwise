@@ -16,6 +16,7 @@ current: ContextVar[Telemetry | None] = ContextVar("telemetry", default=None)
 F = TypeVar("F", bound=Callable[..., Any])
 COUNTERS = {
     "projects.create": "buildwise_projects_created_total",
+    "discovery": "buildwise_discovery_submissions_total",
     "recommendations": "buildwise_recommendation_runs_total",
     "artifacts": "buildwise_artifact_generation_total",
     "tasks": "buildwise_task_generation_total",
@@ -47,6 +48,9 @@ def operation(telemetry: Telemetry, name: str) -> Iterator[None]:
             if name in COUNTERS and name != "artifacts":
                 meter.create_counter(COUNTERS[name]).add(1)
         finally:
+            meter.create_histogram(
+                "buildwise_operation_duration_seconds", unit="s"
+            ).record(perf_counter() - started, attrs)
             if name == "rules":
                 meter.create_histogram(
                     "buildwise_rule_evaluation_duration_seconds", unit="s"

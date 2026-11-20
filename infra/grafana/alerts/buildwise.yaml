@@ -1,0 +1,378 @@
+{
+  "apiVersion": 1,
+  "groups": [
+    {
+      "orgId": 1,
+      "name": "BuildWise",
+      "folder": "BuildWise",
+      "interval": "1m",
+      "rules": [
+        {
+          "uid": "buildwise-5xx-ratio",
+          "title": "Elevated 5xx ratio",
+          "condition": "C",
+          "for": "5m",
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "annotations": {
+            "summary": "Elevated 5xx ratio",
+            "description": "See docs/operations/observability.md for thresholds and minimum-traffic guards."
+          },
+          "labels": {
+            "service": "buildwise-api",
+            "severity": "warning"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "(sum(rate(http_server_requests_total{job=\"buildwise-api\",http_response_status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(http_server_requests_total{job=\"buildwise-api\"}[5m])), 0.000001) > bool 0.05) * (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[5m])) >= bool 20)",
+                "instant": true,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                }
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    },
+                    "type": "query",
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "buildwise-high-latency",
+          "title": "Sustained high P95 latency",
+          "condition": "C",
+          "for": "5m",
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "annotations": {
+            "summary": "Sustained high P95 latency",
+            "description": "See docs/operations/observability.md for thresholds and minimum-traffic guards."
+          },
+          "labels": {
+            "service": "buildwise-api",
+            "severity": "warning"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "(histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"buildwise-api\"}[5m]))) > bool 1) * (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[5m])) >= bool 20)",
+                "instant": true,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                }
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    },
+                    "type": "query",
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "buildwise-health-missing",
+          "title": "Health checks missing or failing",
+          "condition": "C",
+          "for": "5m",
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "annotations": {
+            "summary": "Health checks missing or failing",
+            "description": "See docs/operations/observability.md for thresholds and minimum-traffic guards."
+          },
+          "labels": {
+            "service": "buildwise-api",
+            "severity": "warning"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "(absent_over_time(http_server_requests_total{job=\"buildwise-api\",http_route=\"/health\",http_response_status_code=\"200\"}[10m]) or (sum(increase(http_server_requests_total{job=\"buildwise-api\",http_route=\"/health\",http_response_status_code=\"200\"}[10m])) < bool 1)) * on() (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[1h])) >= bool 20)",
+                "instant": true,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                }
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    },
+                    "type": "query",
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "buildwise-db-unavailable",
+          "title": "Database readiness failing",
+          "condition": "C",
+          "for": "2m",
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "annotations": {
+            "summary": "Database readiness failing",
+            "description": "See docs/operations/observability.md for thresholds and minimum-traffic guards."
+          },
+          "labels": {
+            "service": "buildwise-api",
+            "severity": "warning"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "(sum(increase(http_server_requests_total{job=\"buildwise-api\",http_route=\"/ready\",http_response_status_code=\"503\"}[5m])) >= bool 3) * (sum(increase(http_server_requests_total{job=\"buildwise-api\",http_route=\"/ready\"}[5m])) >= bool 5)",
+                "instant": true,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                }
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    },
+                    "type": "query",
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "buildwise-operation-errors",
+          "title": "Operation error spike",
+          "condition": "C",
+          "for": "2m",
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "annotations": {
+            "summary": "Operation error spike",
+            "description": "See docs/operations/observability.md for thresholds and minimum-traffic guards."
+          },
+          "labels": {
+            "service": "buildwise-api",
+            "severity": "warning"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "(sum(increase(buildwise_operation_errors_total{job=\"buildwise-api\"}[5m])) >= bool 5) * (sum(increase(http_server_requests_total{job=\"buildwise-api\"}[5m])) >= bool 20)",
+                "instant": true,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus"
+                }
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "C",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    },
+                    "type": "query",
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
