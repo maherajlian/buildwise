@@ -91,7 +91,10 @@ unset GRAFANA_SA_TOKEN
 Stdlib only, 15s HTTP timeouts, stable folder/dashboard/rule UIDs and overwrite /
 rule-group PUT make repeated runs idempotent. Creates a **BuildWise** folder and
 looks up datasources by `prometheus`, `loki`, `tempo` type; selects the sole
-matching datasource or its sole default, otherwise fails rather than guessing.
+matching datasource or its sole default. Without a default, standard Grafana Cloud
+UIDs (`grafanacloud-prom`, `grafanacloud-logs`, `grafanacloud-traces`) disambiguate
+the application stores from internal usage and alert-history stores. Other
+ambiguous mappings fail rather than guessing.
 Dashboard variables retain portability; their selected UIDs and alert datasource
 UIDs are mapped to the destination. Token needs datasource-read, folder/dashboard
 write and alert-rule provisioning permissions (Grafana Admin service account is

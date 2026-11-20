@@ -77,6 +77,29 @@ class ProvisionTests(unittest.TestCase):
             "cloud-prometheus",
         )
 
+    def test_cloud_canonical_sources_disambiguate_internal_sources(self):
+        sources = [
+            {"type": kind, "uid": uid}
+            for kind, uid in (
+                ("prometheus", "grafanacloud-prom"),
+                ("loki", "grafanacloud-logs"),
+                ("tempo", "grafanacloud-traces"),
+                ("prometheus", "grafanacloud-usage"),
+                ("loki", "grafanacloud-alert-state-history"),
+                ("loki", "grafanacloud-usage-insights"),
+            )
+        ]
+        self.assertEqual(datasource_map(sources)["loki"]["uid"], "grafanacloud-logs")
+        self.assertEqual(
+            datasource_map(sources)["prometheus"]["uid"], "grafanacloud-prom"
+        )
+        with self.assertRaises(ValueError):
+            datasource_map(sources + [sources[1]])
+        sources[-1]["isDefault"] = True
+        self.assertEqual(
+            datasource_map(sources)["loki"]["uid"], "grafanacloud-usage-insights"
+        )
+
     def test_creates_folder_and_is_idempotent(self):
         client = Mock()
 
