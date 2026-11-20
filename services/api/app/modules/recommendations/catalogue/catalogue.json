@@ -1,0 +1,1361 @@
+{
+  "catalogue_version": "2026.11.2",
+  "rules_version": "1",
+  "entries": [
+    {
+      "id": "nextjs",
+      "name": "Next.js static export",
+      "category": "frontend",
+      "summary": "React framework exported as static assets.",
+      "strengths": [
+        "Component ecosystem and static hosting"
+      ],
+      "constraints": [
+        "Server-only features cannot run in a static export"
+      ],
+      "project_fit": [
+        "Server rendering or dynamic server endpoints become necessary."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Maintain dependencies and rebuild static assets.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "More build tooling than a small static site."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Server rendering or dynamic server endpoints become necessary."
+      ],
+      "selection_rules": [
+        "small",
+        "low_ops"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://nextjs.org/docs/app/guides/static-exports"
+      ]
+    },
+    {
+      "id": "vite-react",
+      "name": "React with Vite",
+      "category": "frontend",
+      "summary": "Client-rendered React application built with Vite.",
+      "strengths": [
+        "Simple static asset deployment"
+      ],
+      "constraints": [
+        "Routing and data conventions need application choices"
+      ],
+      "project_fit": [
+        "Content discovery or server rendering becomes central."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Maintain browser dependencies and build pipeline.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Less framework guidance; client rendering needs care for SEO."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Content discovery or server rendering becomes central."
+      ],
+      "selection_rules": [
+        "small"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://vite.dev/guide/"
+      ]
+    },
+    {
+      "id": "angular",
+      "name": "Angular",
+      "category": "frontend",
+      "summary": "Opinionated TypeScript application framework.",
+      "strengths": [
+        "Integrated forms and dependency injection"
+      ],
+      "constraints": [
+        "Larger conceptual surface for a small team"
+      ],
+      "project_fit": [
+        "A large team needs shared application conventions."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Maintain framework upgrades and application conventions.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "More framework investment than a lightweight client."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "A large team needs shared application conventions."
+      ],
+      "selection_rules": [
+        "distributed"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://angular.dev/"
+      ]
+    },
+    {
+      "id": "fastapi",
+      "name": "FastAPI",
+      "category": "backend",
+      "summary": "Python HTTP API with typed request validation.",
+      "strengths": [
+        "OpenAPI generation and Python ecosystem"
+      ],
+      "constraints": [
+        "Async code still requires careful blocking-I/O handling"
+      ],
+      "project_fit": [
+        "A built-in administrative back office becomes essential."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Operate one API process and maintain Python dependencies.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Background durability and admin UI are separate concerns."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "A built-in administrative back office becomes essential."
+      ],
+      "selection_rules": [
+        "small",
+        "low_ops"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://fastapi.tiangolo.com/"
+      ]
+    },
+    {
+      "id": "django",
+      "name": "Django",
+      "category": "backend",
+      "summary": "Python web framework with ORM and administrative tooling.",
+      "strengths": [
+        "Mature authentication and admin ecosystem"
+      ],
+      "constraints": [
+        "More integrated framework conventions"
+      ],
+      "project_fit": [
+        "Administrative workflows outweigh a minimal API surface."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Maintain migrations, application server and framework updates.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "API schemas may require an additional library."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Administrative workflows outweigh a minimal API surface."
+      ],
+      "selection_rules": [
+        "basic_auth"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://www.djangoproject.com/"
+      ]
+    },
+    {
+      "id": "nestjs",
+      "name": "NestJS",
+      "category": "backend",
+      "summary": "Structured TypeScript server framework.",
+      "strengths": [
+        "Shared TypeScript skills and modular conventions"
+      ],
+      "constraints": [
+        "Decorator and dependency-injection learning curve"
+      ],
+      "project_fit": [
+        "The team standardizes on TypeScript end to end."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Operate a Node service and maintain npm dependencies.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "More abstraction than a small HTTP service."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "The team standardizes on TypeScript end to end."
+      ],
+      "selection_rules": [
+        "distributed"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://nestjs.com/"
+      ]
+    },
+    {
+      "id": "postgresql",
+      "name": "PostgreSQL",
+      "category": "database",
+      "summary": "Relational database with transactions, constraints and JSON support.",
+      "strengths": [
+        "Strong transactional model and flexible querying"
+      ],
+      "constraints": [
+        "Scaling writes across regions requires additional design"
+      ],
+      "project_fit": [
+        "Measured regional write or availability requirements exceed a primary-based design."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Use managed backups or operate backups, upgrades and recovery.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "A single primary is not transparent global write distribution."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Measured regional write or availability requirements exceed a primary-based design."
+      ],
+      "selection_rules": [
+        "relational",
+        "small",
+        "low_ops"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://www.postgresql.org/docs/"
+      ]
+    },
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "category": "database",
+      "summary": "Document database for aggregate-oriented records.",
+      "strengths": [
+        "Flexible document representation"
+      ],
+      "constraints": [
+        "Flexible schemas do not remove validation or indexing work"
+      ],
+      "project_fit": [
+        "Record boundaries are document-centric with few cross-document joins."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Manage indexes, backups and replica-set configuration or a managed tier.",
+      "cost_category": "self-hosted",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Cross-document relationships can complicate an otherwise relational domain."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Record boundaries are document-centric with few cross-document joins."
+      ],
+      "selection_rules": [
+        "document"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://www.mongodb.com/docs/"
+      ]
+    },
+    {
+      "id": "cockroachdb",
+      "name": "CockroachDB",
+      "category": "database",
+      "summary": "Distributed SQL database designed for resilient multi-node operation.",
+      "strengths": [
+        "Distributed transactions and SQL interface"
+      ],
+      "constraints": [
+        "SQL compatibility and latency characteristics need workload tests"
+      ],
+      "project_fit": [
+        "Multi-region write availability is a demonstrated requirement."
+      ],
+      "operational_complexity": "high",
+      "operational_burden": "Plan cluster topology, capacity and recovery or pay for managed operation.",
+      "cost_category": "paid",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Distribution adds latency and operational complexity; verify licensing."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Multi-region write availability is a demonstrated requirement."
+      ],
+      "selection_rules": [
+        "distributed",
+        "k8s_penalty"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://www.cockroachlabs.com/docs/"
+      ]
+    },
+    {
+      "id": "postgres-jobs",
+      "name": "PostgreSQL-backed jobs",
+      "category": "cache_queue",
+      "summary": "Durable job table using transactions and a worker in the existing deployment.",
+      "strengths": [
+        "Avoids a separate broker for modest workloads"
+      ],
+      "constraints": [
+        "Requires safe claiming, retries, idempotency and retention"
+      ],
+      "project_fit": [
+        "Queue throughput or isolation needs exceed the application database."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Operate a worker process and monitor job lag and table growth.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Job load shares database capacity with application queries."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Queue throughput or isolation needs exceed the application database."
+      ],
+      "selection_rules": [
+        "document_jobs_penalty",
+        "jobs",
+        "small",
+        "low_ops"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://www.postgresql.org/docs/current/sql-select.html"
+      ]
+    },
+    {
+      "id": "redis-rq",
+      "name": "Redis with RQ",
+      "category": "cache_queue",
+      "summary": "Python background workers backed by Redis.",
+      "strengths": [
+        "Straightforward Python job processing"
+      ],
+      "constraints": [
+        "Durability depends on Redis persistence and deployment"
+      ],
+      "project_fit": [
+        "Python job throughput needs dedicated queue capacity."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Operate Redis and workers; monitor failures and memory.",
+      "cost_category": "self-hosted",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Adds a service and persistence configuration; verify Redis licensing."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Python job throughput needs dedicated queue capacity."
+      ],
+      "selection_rules": [
+        "document_jobs",
+        "jobs",
+        "realtime",
+        "no_jobs"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://python-rq.org/"
+      ]
+    },
+    {
+      "id": "rabbitmq",
+      "name": "RabbitMQ",
+      "category": "cache_queue",
+      "summary": "Message broker supporting acknowledgements and routing.",
+      "strengths": [
+        "Flexible messaging and consumer decoupling"
+      ],
+      "constraints": [
+        "Broker topology and delivery semantics require expertise"
+      ],
+      "project_fit": [
+        "Multiple independent consumers need explicit routing and messaging semantics."
+      ],
+      "operational_complexity": "high",
+      "operational_burden": "Operate broker storage, queues, upgrades and consumers.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "More operational surface than a database-backed worker."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Multiple independent consumers need explicit routing and messaging semantics."
+      ],
+      "selection_rules": [
+        "jobs",
+        "distributed",
+        "no_jobs"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://www.rabbitmq.com/docs"
+      ]
+    },
+    {
+      "id": "session-library",
+      "name": "Maintained session authentication",
+      "category": "auth",
+      "summary": "Use framework-maintained password/session facilities rather than bespoke cryptography.",
+      "strengths": [
+        "Keeps simple authentication in the application"
+      ],
+      "constraints": [
+        "Application still owns recovery, session security and abuse controls"
+      ],
+      "project_fit": [
+        "SSO, federation or complex organization policies become necessary."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Patch authentication libraries and test recovery and session expiry.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Less turnkey enterprise federation than an identity platform."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "SSO, federation or complex organization policies become necessary."
+      ],
+      "selection_rules": [
+        "basic_auth",
+        "small"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html"
+      ]
+    },
+    {
+      "id": "keycloak",
+      "name": "Keycloak",
+      "category": "auth",
+      "summary": "Self-hosted identity provider with federation protocols.",
+      "strengths": [
+        "OIDC and SAML federation"
+      ],
+      "constraints": [
+        "Requires identity-service availability and secure administration"
+      ],
+      "project_fit": [
+        "Enterprise federation is required and operators can own identity infrastructure."
+      ],
+      "operational_complexity": "high",
+      "operational_burden": "Operate identity database, upgrades, keys and recovery.",
+      "cost_category": "self-hosted",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Removes some application auth work but adds a critical service."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Enterprise federation is required and operators can own identity infrastructure."
+      ],
+      "selection_rules": [
+        "sso",
+        "k8s_penalty",
+        "no_auth"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://www.keycloak.org/documentation"
+      ]
+    },
+    {
+      "id": "auth0",
+      "name": "Auth0",
+      "category": "auth",
+      "summary": "Managed identity platform.",
+      "strengths": [
+        "Hosted federation and authentication features"
+      ],
+      "constraints": [
+        "Plan limits and federation features require verification"
+      ],
+      "project_fit": [
+        "Enterprise federation is needed without self-hosting identity."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Manage tenant configuration, callbacks, secrets and provider dependency.",
+      "cost_category": "usage-based",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Vendor dependency and growing identity costs."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Enterprise federation is needed without self-hosting identity."
+      ],
+      "selection_rules": [
+        "sso",
+        "low_ops",
+        "flexible",
+        "no_auth"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://auth0.com/docs"
+      ]
+    },
+    {
+      "id": "render-free",
+      "name": "Render Free single service",
+      "category": "hosting",
+      "summary": "Managed single-service deployment suitable for a low-traffic demo.",
+      "strengths": [
+        "Small deployment footprint"
+      ],
+      "constraints": [
+        "Free web services sleep after inactivity; quotas and eligibility require verification"
+      ],
+      "project_fit": [
+        "Always-on availability, persistent workers or free-tier limits become requirements."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Monitor cold starts, deployment health and free-instance-hour usage.",
+      "cost_category": "free-tier",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Sleeping services are inappropriate for an always-on SLA; background workers may need a different plan."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Always-on availability, persistent workers or free-tier limits become requirements."
+      ],
+      "selection_rules": [
+        "small",
+        "low_budget",
+        "low_ops"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://render.com/docs/free"
+      ]
+    },
+    {
+      "id": "single-vm",
+      "name": "Single virtual machine",
+      "category": "hosting",
+      "summary": "Run the application on one provisioned host.",
+      "strengths": [
+        "Control over processes and networking"
+      ],
+      "constraints": [
+        "Host patching, backup and recovery are your responsibility"
+      ],
+      "project_fit": [
+        "Dedicated workers or host-level control are required."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Maintain OS, TLS, reverse proxy, monitoring and recovery.",
+      "cost_category": "self-hosted",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Usually a recurring compute cost and a single-host failure domain."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Dedicated workers or host-level control are required."
+      ],
+      "selection_rules": [
+        "small",
+        "flexible"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://docs.docker.com/engine/"
+      ]
+    },
+    {
+      "id": "kubernetes",
+      "name": "Kubernetes",
+      "category": "hosting",
+      "summary": "Container orchestration for multi-service infrastructure.",
+      "strengths": [
+        "Scheduling and declarative rollout controls"
+      ],
+      "constraints": [
+        "Needs cluster expertise; not a default for small applications"
+      ],
+      "project_fit": [
+        "Large scale and a capable dedicated operations team justify orchestration."
+      ],
+      "operational_complexity": "high",
+      "operational_burden": "Operate cluster upgrades, ingress, security, networking and capacity.",
+      "cost_category": "self-hosted",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Significant complexity and infrastructure costs for a small service."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Large scale and a capable dedicated operations team justify orchestration."
+      ],
+      "selection_rules": [
+        "k8s_penalty",
+        "k8s_small_penalty",
+        "k8s_scale"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://kubernetes.io/docs/concepts/"
+      ]
+    },
+    {
+      "id": "github-actions",
+      "name": "GitHub Actions",
+      "category": "ci_cd",
+      "summary": "Repository-integrated automated checks and build workflows.",
+      "strengths": [
+        "Close integration with GitHub repositories"
+      ],
+      "constraints": [
+        "Runner minutes, artifact retention and permissions need controls"
+      ],
+      "project_fit": [
+        "Repository hosting or compliance constraints change."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Maintain pinned actions, workflow permissions and runner budgets.",
+      "cost_category": "free-tier",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Provider-specific workflows and usage quotas."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Repository hosting or compliance constraints change."
+      ],
+      "selection_rules": [
+        "small",
+        "low_ops",
+        "low_budget"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://docs.github.com/en/actions"
+      ]
+    },
+    {
+      "id": "gitlab-ci",
+      "name": "GitLab CI/CD",
+      "category": "ci_cd",
+      "summary": "Pipeline configuration integrated with GitLab.",
+      "strengths": [
+        "Integrated repository and pipeline tooling"
+      ],
+      "constraints": [
+        "Hosted runner quotas and migration costs need evaluation"
+      ],
+      "project_fit": [
+        "The organization standardizes on GitLab."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Maintain pipelines and runner permissions or self-host runners.",
+      "cost_category": "free-tier",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Moving an existing GitHub workflow adds migration work."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "The organization standardizes on GitLab."
+      ],
+      "selection_rules": [
+        "distributed"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://docs.gitlab.com/ci/"
+      ]
+    },
+    {
+      "id": "jenkins",
+      "name": "Jenkins",
+      "category": "ci_cd",
+      "summary": "Self-hosted extensible automation server.",
+      "strengths": [
+        "Control over build infrastructure"
+      ],
+      "constraints": [
+        "Controller and plugin security need active maintenance"
+      ],
+      "project_fit": [
+        "Build isolation or legacy integrations require a self-hosted controller."
+      ],
+      "operational_complexity": "high",
+      "operational_burden": "Patch controller/plugins, manage agents and backups.",
+      "cost_category": "self-hosted",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Operational ownership is substantial compared with hosted CI."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Build isolation or legacy integrations require a self-hosted controller."
+      ],
+      "selection_rules": [
+        "k8s_penalty",
+        "k8s_scale"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://www.jenkins.io/doc/"
+      ]
+    },
+    {
+      "id": "grafana-cloud",
+      "name": "Grafana Cloud with OpenTelemetry",
+      "category": "observability",
+      "summary": "Managed telemetry backend accepting OpenTelemetry signals.",
+      "strengths": [
+        "Avoids operating a telemetry storage stack"
+      ],
+      "constraints": [
+        "Ingestion and retention quotas require verification"
+      ],
+      "project_fit": [
+        "Telemetry volume or residency exceeds the managed offering."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Set sampling, scrub sensitive data and monitor ingestion budgets.",
+      "cost_category": "free-tier",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Quota limits and hosted-provider dependency."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Telemetry volume or residency exceeds the managed offering."
+      ],
+      "selection_rules": [
+        "small",
+        "low_ops",
+        "low_budget"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://grafana.com/docs/grafana-cloud/"
+      ]
+    },
+    {
+      "id": "prometheus-grafana",
+      "name": "Prometheus and Grafana",
+      "category": "observability",
+      "summary": "Self-hosted metrics collection and dashboards.",
+      "strengths": [
+        "Control over retention and collection"
+      ],
+      "constraints": [
+        "Logs and traces need additional components"
+      ],
+      "project_fit": [
+        "Data residency or local infrastructure favors self-hosted metrics."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Operate storage, scraping, alert delivery and upgrades.",
+      "cost_category": "self-hosted",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Metrics alone are not full logs/metrics/traces observability."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Data residency or local infrastructure favors self-hosted metrics."
+      ],
+      "selection_rules": [
+        "distributed"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://prometheus.io/docs/introduction/overview/"
+      ]
+    },
+    {
+      "id": "otel-collector",
+      "name": "OpenTelemetry Collector pipeline",
+      "category": "observability",
+      "summary": "Vendor-neutral telemetry processing and export gateway.",
+      "strengths": [
+        "Filtering and multiple exporter support"
+      ],
+      "constraints": [
+        "Collector is not a telemetry storage or dashboard backend"
+      ],
+      "project_fit": [
+        "Multiple services need centralized telemetry policy."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Maintain receivers, processors, exporters and downstream storage.",
+      "cost_category": "open-source-self-hosted-or-managed",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Adds a service and still needs a destination."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Multiple services need centralized telemetry policy."
+      ],
+      "selection_rules": [
+        "k8s_scale"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://opentelemetry.io/docs/collector/"
+      ]
+    },
+    {
+      "id": "email-sms-calendar",
+      "name": "Email, SMS and calendar adapters",
+      "category": "integrations",
+      "summary": "Small provider adapters for notifications and calendar export.",
+      "strengths": [
+        "Matches booking reminders and guest notifications"
+      ],
+      "constraints": [
+        "SMS delivery and consent vary by region; email needs deliverability setup"
+      ],
+      "project_fit": [
+        "Delivery volume, geography or consent rules change."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Manage consent, secrets, retries, delivery reports and provider quotas.",
+      "cost_category": "usage-based",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Messaging can incur cost even on an otherwise free stack."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Delivery volume, geography or consent rules change."
+      ],
+      "selection_rules": [
+        "email",
+        "sms",
+        "calendar",
+        "small"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://www.twilio.com/docs/messaging"
+      ]
+    },
+    {
+      "id": "payment-adapter",
+      "name": "Hosted payment adapter",
+      "category": "integrations",
+      "summary": "Use hosted checkout and verified payment webhooks.",
+      "strengths": [
+        "Avoid handling raw card details in the application"
+      ],
+      "constraints": [
+        "Payment fees and supported regions require verification"
+      ],
+      "project_fit": [
+        "Payments or deposits become confirmed in-scope requirements."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Verify signatures and implement idempotent reconciliation.",
+      "cost_category": "usage-based",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Provider coupling and financial reconciliation complexity."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Payments or deposits become confirmed in-scope requirements."
+      ],
+      "selection_rules": [
+        "payments"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://docs.stripe.com/payments/checkout"
+      ]
+    },
+    {
+      "id": "generic-webhooks",
+      "name": "Generic HTTP/webhook adapters",
+      "category": "integrations",
+      "summary": "Explicit adapters for third-party HTTP APIs, including maps and geocoding.",
+      "strengths": [
+        "Keeps provider boundaries visible and testable"
+      ],
+      "constraints": [
+        "Each provider has distinct retries and rate limits"
+      ],
+      "project_fit": [
+        "New integrations need capabilities beyond messaging or payments."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Manage timeouts, signatures, secrets and failure recovery.",
+      "cost_category": "usage-based",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "More custom integration code than a provider-specific SDK."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "New integrations need capabilities beyond messaging or payments."
+      ],
+      "selection_rules": [
+        "maps",
+        "generic_api",
+        "distributed"
+      ],
+      "optional": false,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html"
+      ]
+    },
+    {
+      "id": "self-hosted-model",
+      "name": "Self-hosted open-weight model",
+      "category": "ai_layer",
+      "summary": "Optional local inference infrastructure, not called by BuildWise.",
+      "strengths": [
+        "Control over model hosting and data flow"
+      ],
+      "constraints": [
+        "Weights licenses, hardware capacity and evaluation require review"
+      ],
+      "project_fit": [
+        "Privacy requirements justify hosting and the team can operate inference."
+      ],
+      "operational_complexity": "high",
+      "operational_burden": "Operate inference capacity, model updates, evaluation and safety controls.",
+      "cost_category": "self-hosted",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "No API bill does not mean no compute or maintenance cost."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Privacy requirements justify hosting and the team can operate inference."
+      ],
+      "selection_rules": [
+        "ai",
+        "k8s_scale",
+        "k8s_penalty"
+      ],
+      "optional": true,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://huggingface.co/docs/transformers/"
+      ]
+    },
+    {
+      "id": "hosted-model-api",
+      "name": "Hosted model API",
+      "category": "ai_layer",
+      "summary": "Optional external model provider for a future product, not BuildWise generation.",
+      "strengths": [
+        "Avoids owning inference servers"
+      ],
+      "constraints": [
+        "Usage costs, privacy and nondeterministic outputs require evaluation"
+      ],
+      "project_fit": [
+        "An explicit AI feature has measurable quality and budget requirements."
+      ],
+      "operational_complexity": "low",
+      "operational_burden": "Set budgets, evaluate outputs and review provider data policy.",
+      "cost_category": "usage-based",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "Provider dependency and per-request costs; never enabled by a keyword mention."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "An explicit AI feature has measurable quality and budget requirements."
+      ],
+      "selection_rules": [
+        "ai",
+        "low_ops"
+      ],
+      "optional": true,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+      ]
+    },
+    {
+      "id": "managed-ai-platform",
+      "name": "Managed AI platform",
+      "category": "ai_layer",
+      "summary": "Optional managed model deployment and governance platform.",
+      "strengths": [
+        "Centralized deployment and access controls"
+      ],
+      "constraints": [
+        "Platform features and minimum charges require verification"
+      ],
+      "project_fit": [
+        "Multiple AI workloads need shared governance and deployment tooling."
+      ],
+      "operational_complexity": "medium",
+      "operational_burden": "Manage permissions, model endpoints, evaluation and spend controls.",
+      "cost_category": "usage-based",
+      "cost_note": "pricing/free-tier claims require verification; consult current provider terms, limits and regional availability.",
+      "trade_offs": [
+        "More platform complexity and potential lock-in than one API."
+      ],
+      "assumptions": [
+        "Validate this option against workload tests, team skills and current licensing."
+      ],
+      "change_conditions": [
+        "Multiple AI workloads need shared governance and deployment tooling."
+      ],
+      "selection_rules": [
+        "ai",
+        "flexible",
+        "distributed"
+      ],
+      "optional": true,
+      "last_reviewed": "2026-11-20",
+      "links": [
+        "https://learn.microsoft.com/en-us/azure/ai-services/"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "small",
+      "description": "Small applications benefit from a simple deployment.",
+      "when": {
+        "scale": "small"
+      },
+      "weight": 20,
+      "reason": "Small applications benefit from a simple deployment."
+    },
+    {
+      "id": "relational",
+      "description": "Transactions and related entities favor a relational store.",
+      "when": {
+        "data_shape": "relational"
+      },
+      "weight": 40,
+      "reason": "Transactions and related entities favor a relational store."
+    },
+    {
+      "id": "document",
+      "description": "Document-shaped records favor a document store.",
+      "when": {
+        "data_shape": "document"
+      },
+      "weight": 45,
+      "reason": "Document-shaped records favor a document store."
+    },
+    {
+      "id": "distributed",
+      "description": "Large-scale workloads may justify distributed storage.",
+      "when": {
+        "scale": "large"
+      },
+      "weight": 35,
+      "reason": "Large-scale workloads may justify distributed storage."
+    },
+    {
+      "id": "jobs",
+      "description": "Background jobs need durable retryable processing.",
+      "when": {
+        "background_jobs": "yes"
+      },
+      "weight": 40,
+      "reason": "Background jobs need durable retryable processing."
+    },
+    {
+      "id": "document_jobs_penalty",
+      "description": "A document-store application should not add PostgreSQL solely for its job queue.",
+      "when": {
+        "data_shape": "document",
+        "background_jobs": "yes"
+      },
+      "weight": -100,
+      "reason": "A document-store application should not add PostgreSQL solely for its job queue."
+    },
+    {
+      "id": "document_jobs",
+      "description": "A Redis-backed worker can process jobs independently of the application document store.",
+      "when": {
+        "data_shape": "document",
+        "background_jobs": "yes"
+      },
+      "weight": 50,
+      "reason": "A Redis-backed worker can process jobs independently of the application document store."
+    },
+    {
+      "id": "no_jobs",
+      "description": "Without background jobs, avoid a dedicated broker.",
+      "when": {
+        "background_jobs": "no"
+      },
+      "weight": -30,
+      "reason": "Without background jobs, avoid a dedicated broker."
+    },
+    {
+      "id": "low_ops",
+      "description": "Limited operations capacity favors managed/simple services.",
+      "when": {
+        "ops_capability": "low"
+      },
+      "weight": 25,
+      "reason": "Limited operations capacity favors managed/simple services."
+    },
+    {
+      "id": "low_budget",
+      "description": "A constrained budget favors a small single-service deployment.",
+      "when": {
+        "budget": [
+          "zero",
+          "low"
+        ]
+      },
+      "weight": 30,
+      "reason": "A constrained budget favors a small single-service deployment."
+    },
+    {
+      "id": "k8s_penalty",
+      "description": "A cluster adds substantial operational overhead.",
+      "when": {
+        "ops_capability": [
+          "low",
+          "medium"
+        ]
+      },
+      "weight": -100,
+      "reason": "A cluster adds substantial operational overhead."
+    },
+    {
+      "id": "k8s_small_penalty",
+      "description": "Smaller workloads rarely justify cluster overhead.",
+      "when": {
+        "scale": ["small", "medium"]
+      },
+      "weight": -100,
+      "reason": "Smaller workloads rarely justify cluster overhead."
+    },
+    {
+      "id": "k8s_scale",
+      "description": "Large scale with dedicated operators can justify orchestration.",
+      "when": {
+        "scale": "large",
+        "ops_capability": "high"
+      },
+      "weight": 100,
+      "reason": "Large scale with dedicated operators can justify orchestration."
+    },
+    {
+      "id": "sso",
+      "description": "Enterprise SSO requires federation support.",
+      "when": {
+        "auth_needs": "enterprise_sso"
+      },
+      "weight": 60,
+      "reason": "Enterprise SSO requires federation support."
+    },
+    {
+      "id": "basic_auth",
+      "description": "Basic authentication favors maintained session libraries.",
+      "when": {
+        "auth_needs": "basic"
+      },
+      "weight": 30,
+      "reason": "Basic authentication favors maintained session libraries."
+    },
+    {
+      "id": "no_auth",
+      "description": "No authentication requirement does not justify an identity service.",
+      "when": {
+        "auth_needs": "none"
+      },
+      "weight": -50,
+      "reason": "No authentication requirement does not justify an identity service."
+    },
+    {
+      "id": "realtime",
+      "description": "Realtime delivery benefits from a persistent connection service.",
+      "when": {
+        "realtime": "yes"
+      },
+      "weight": 30,
+      "reason": "Realtime delivery benefits from a persistent connection service."
+    },
+    {
+      "id": "email",
+      "description": "Email integration is explicitly detected or selected.",
+      "when": {
+        "integrations": "email"
+      },
+      "weight": 25,
+      "reason": "Email integration is explicitly detected or selected."
+    },
+    {
+      "id": "sms",
+      "description": "SMS integration is explicitly detected or selected.",
+      "when": {
+        "integrations": "sms"
+      },
+      "weight": 25,
+      "reason": "SMS integration is explicitly detected or selected."
+    },
+    {
+      "id": "payments",
+      "description": "Payments require a payment-provider adapter.",
+      "when": {
+        "integrations": "payments"
+      },
+      "weight": 25,
+      "reason": "Payments require a payment-provider adapter."
+    },
+    {
+      "id": "calendar",
+      "description": "Calendar integration favors a calendar export adapter.",
+      "when": {
+        "integrations": "calendar"
+      },
+      "weight": 25,
+      "reason": "Calendar integration favors a calendar export adapter."
+    },
+    {
+      "id": "maps",
+      "description": "Maps and geocoding need a dedicated HTTP provider adapter.",
+      "when": {
+        "integrations": "maps"
+      },
+      "weight": 40,
+      "reason": "Maps and geocoding need a dedicated HTTP provider adapter."
+    },
+    {
+      "id": "generic_api",
+      "description": "External APIs need explicit HTTP and webhook boundaries.",
+      "when": {
+        "integrations": "generic_api"
+      },
+      "weight": 40,
+      "reason": "External APIs need explicit HTTP and webhook boundaries."
+    },
+    {
+      "id": "ai",
+      "description": "Explicit AI requirement enables optional candidates, not runtime calls.",
+      "when": {
+        "ai_layer": "required"
+      },
+      "weight": 10,
+      "reason": "Explicit AI requirement enables optional candidates, not runtime calls."
+    },
+    {
+      "id": "flexible",
+      "description": "A flexible budget can accommodate managed service charges.",
+      "when": {
+        "budget": "flexible"
+      },
+      "weight": 25,
+      "reason": "A flexible budget can accommodate managed service charges."
+    }
+  ]
+}

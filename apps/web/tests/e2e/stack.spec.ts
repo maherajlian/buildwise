@@ -170,6 +170,10 @@ for (const [path, label, heading] of pages) {
       await expect(page.getByText("All systems ready")).toBeVisible();
     if (path === "/projects/")
       await expect(page.getByText("No projects yet")).toBeVisible();
+    if (path === "/catalogue/")
+      await expect(
+        page.getByRole("heading", { name: "PostgreSQL", exact: true }),
+      ).toBeVisible();
     expect(
       (
         await new AxeBuilder({ page })

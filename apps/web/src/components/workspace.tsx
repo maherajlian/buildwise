@@ -20,13 +20,15 @@ import {
 } from "@/components/form-error";
 import { DiscoveryWizard } from "@/components/discovery";
 import { Requirements } from "@/components/requirements";
+import { Architecture } from "@/components/architecture";
 
-const TABS = ["overview", "discovery", "requirements"] as const;
+const TABS = ["overview", "discovery", "requirements", "architecture"] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, string> = {
   overview: "Overview",
   discovery: "Discovery",
   requirements: "Requirements",
+  architecture: "Architecture",
 };
 const STEP_LABELS: Record<string, string> = {
   problem: "Problem",
@@ -181,6 +183,9 @@ export function Workspace() {
         )}
         {tab === "requirements" && (
           <Requirements projectId={project.id} readOnly={readOnly} />
+        )}
+        {tab === "architecture" && (
+          <Architecture projectId={project.id} readOnly={readOnly} />
         )}
       </div>
     </>
