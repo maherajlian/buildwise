@@ -159,7 +159,7 @@ PAGES_MAIN_BROWSER API responding · Database connected
 
 Screenshot inspected: `/home/ubuntu/screenshots/buildwise-main-dashboard.png`.
 
-## Grafana: ingestion unverified
+## Grafana: OTLP accepted; query-side not verified
 
 The configured OTLP endpoint/header values were supplied to Render. Successful
 API startup does **not** prove export success. A read-only Grafana Cloud
@@ -168,8 +168,29 @@ authorization header returned HTTP 200 but **zero visible stacks**. Therefore no
 authoritative Loki/Tempo query endpoints and tenant IDs were available from that
 response. No query endpoint was guessed and no additional scope/token requested.
 
-**Traces, logs and metrics reaching Grafana remain unverified.** The result does
-not establish which read scopes the token has. To finish verification, the owner
+### Direct OTLP acceptance probe
+
+On the follow-up run, one synthetic span and one correlated INFO log line were
+sent directly to the supplied OTLP endpoint's `/v1/traces` and `/v1/logs` paths
+using OTLP/HTTP JSON and the supplied authorization headers. The payload used
+`service.name=buildwise-api`, `buildwise.spike.probe=true`, a random trace/span ID,
+and the message `BuildWise deployment spike direct OTLP log probe`. No personal
+data or credentials were included in the telemetry body or printed.
+
+```text
+GRAFANA_OTLP_PROBE {"signal": "traces", "http": 200, "rejected_records": 0, "partial_error_present": false}
+GRAFANA_OTLP_PROBE {"signal": "logs", "http": 204, "rejected_records": 0, "partial_error_present": false}
+```
+
+Both 2xx responses mean **OTLP accepted; query-side not verified**. No partial
+rejection/error was reported (the logs response was empty). These direct probes
+verify endpoint/authentication acceptance, not delivery from the running API's
+exporters, durable storage, metrics acceptance, or query-side visibility. No
+card/payment/upgrade prompt appeared.
+
+The discovery result does not establish which read scopes the token has.
+Application-exported traces/logs and all metrics remain unverified. To finish
+query-side verification, the owner
 can inspect the stack's Explore UI for `service.name=buildwise-api` (Loki's
 normalised label is commonly `service_name`) or provide query endpoint/tenant
 metadata and read-authorized access through the normal secret-management process.
