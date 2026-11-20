@@ -15,10 +15,12 @@ from app.core.errors import ErrorResponse
 from app.core.middleware import CorrelationID, JsonCORS, RequestSafety
 from app.core.settings import Settings, database_url
 from app.modules.discovery.router import router as discovery_router
+from app.modules.planning.router import router as planning_router
 from app.modules.projects.router import router
 from app.modules.recommendations.catalogue_loader import load_catalogue
 from app.modules.recommendations.router import router as recommendations_router
 from app.modules.requirements.router import router as requirements_router
+from app.modules.specifications.router import router as specifications_router
 from app.telemetry.setup import configure_telemetry
 
 
@@ -121,6 +123,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(discovery_router)
     app.include_router(requirements_router)
     app.include_router(recommendations_router)
+    app.include_router(specifications_router)
+    app.include_router(planning_router)
     app.add_middleware(RequestSafety)
     app.add_middleware(
         JsonCORS,

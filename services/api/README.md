@@ -1,5 +1,39 @@
 # API foundation
 
+## Phase 4: Specify and Build planning (backend)
+
+All generation is local deterministic rules/templates: no inference, model calls or
+new paid dependencies. Under `/api/v1/projects/{id}`:
+
+- `POST /artefacts/generate` accepts optional `kinds` and `overwrite_edited=false`.
+  `GET /artefacts`, `GET/PATCH/DELETE /artefacts/{aid}` provide structured documents;
+  PATCH takes `title`/`sections` and marks the document edited. Sections contain
+  unique `key`, `heading`, `body` fields (1–40 sections, bounded text).
+- `POST /artefacts` accepts `{kind:"adr", title}`; multiple ADRs are allowed.
+  All other kinds are unique per project. `GET /artefacts/{aid}/markdown` and
+  `GET /artefacts/export/markdown` return `text/markdown`, with a fixed document
+  order, context header and table of contents in the combined export.
+- Kinds: `prd`, `technical_design`, `architecture`, `adr`, `data_model`,
+  `api_contract`, `user_stories`, `acceptance_criteria`,
+  `non_functional_requirements`, `security`, `test_strategy`, `deployment`,
+  `observability`. Context snapshots retain discovery, requirements and effective
+  technology recommendations; missing decisions are explicitly marked TODO.
+- `POST /plan/generate` accepts `overwrite=false` (preserves an existing plan);
+  `GET /plan` returns `epics`, `tasks`, and `{valid, errors}` validation.
+  `POST /plan/epics`, `PATCH/DELETE /plan/epics/{eid}` and
+  `POST /plan/tasks`, `PATCH/DELETE /plan/tasks/{tid}` edit the plan.
+  Task keys are assigned automatically, unique per project. Priorities are P0/P1/P2;
+  statuses are `backlog`, `ready`, `in_progress`, `review`, `done`.
+  Dependencies are task UUIDs; unknown/foreign/self/cyclic dependencies return 422.
+  Active/review/done tasks require dependencies done, including on later edits.
+  Deleting tasks removes incoming dependencies; deleting epics ungroups tasks.
+  `GET /plan/export/markdown` exports every epic/task and planning field.
+
+Reads use the owner token except for the public sample; all writes require an owner
+token and update project activity. The sample is seeded with specifications and a
+plan and rejects writes with 403. Migration `0004` adds `artefacts`, `epics` and
+`plan_tasks`; project deletion cascades. No frontend is added in this phase.
+
 Python 3.12 and uv. From the repository root: `docker compose up -d --build api`.
 From this directory: `uv sync --frozen`, `uv run alembic upgrade head`, then
 `uv run uvicorn app.main:create_app --factory --port 8000`.

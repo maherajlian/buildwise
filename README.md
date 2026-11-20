@@ -54,6 +54,25 @@ service so the browser always uses the public localhost API URL.
 
 ## API contract
 
+### Specifications and Build planning (Phase 4 backend)
+
+Under `/api/v1/projects/{id}`, `POST /artefacts/generate` deterministically produces
+13 editable document kinds from discovery, requirements and effective recommendations.
+`GET /artefacts`, `GET/PATCH/DELETE /artefacts/{aid}`, and `POST /artefacts` (new ADR)
+manage structured sections. Edited documents survive regeneration unless
+`overwrite_edited=true`. `GET /artefacts/{aid}/markdown` and
+`GET /artefacts/export/markdown` export readable Markdown with project context.
+
+`POST /plan/generate` creates epics and tasks (`overwrite=true` replaces a plan).
+`GET /plan` includes dependency validation; `POST /plan/tasks` and
+`POST /plan/epics`, with `PATCH/DELETE /plan/tasks/{tid}` and
+`PATCH/DELETE /plan/epics/{eid}`, support manual planning. Dependencies must exist
+in the same project, be acyclic and not refer to self; active/review/done tasks
+require all dependencies done (422 otherwise). `GET /plan/export/markdown` exports
+the complete plan. Reads require the project token except for the read-only public
+sample; writes refresh project activity. No AI inference or frontend changes.
+See [API details](services/api/README.md#phase-4-specify-and-build-planning-backend).
+
 ### Deterministic recommendations (Phase 3)
 
 `GET /api/v1/catalogue` exposes the curated catalogue and rules without a token.
