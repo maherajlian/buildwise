@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: buildwise
+      POSTGRES_PASSWORD: buildwise
+      POSTGRES_DB: buildwise
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U buildwise -d buildwise"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+  api:
+    build: ./services/api
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql+psycopg://buildwise:buildwise@postgres:5432/buildwise
+      CORS_ORIGINS: '${CORS_ORIGINS:-["http://localhost:3000"]}'
+      OTEL_SERVICE_NAME: buildwise-api
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:-}
+      OTEL_TRACES_SAMPLER: parentbased_traceidratio
+      OTEL_TRACES_SAMPLER_ARG: ${OTEL_TRACES_SAMPLER_ARG:-0.1}
+      PORT: "8000"
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+volumes:
+  postgres_data:
