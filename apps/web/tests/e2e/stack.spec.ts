@@ -21,10 +21,13 @@ test("real API health and readiness", async ({ page }) => {
 test("dashboard detects an outage and recovers without reloading", async ({
   page,
 }) => {
-  await page.clock.install();
+  await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") });
+  await page.clock.pauseAt(new Date("2026-01-01T00:00:01Z"));
   let offline = false;
+  let failedProbes = 0;
   await page.route("**/health", async (route) => {
     if (!offline) return route.continue();
+    failedProbes++;
     await route.fulfill({
       status: 503,
       headers: { "Access-Control-Allow-Origin": "http://localhost:3000" },
@@ -39,21 +42,24 @@ test("dashboard detects an outage and recovers without reloading", async ({
   });
   await page.goto("/");
   await expect(page.getByText("All systems ready")).toBeVisible();
+  const originalDocument = await page.evaluateHandle(() => document);
   offline = true;
   await page.clock.fastForward(30000);
   await expect(page.getByText("Waking the API")).toBeVisible();
   await expect
-    .poll(
-      async () => {
-        await page.clock.runFor(1000);
-        return page.getByText("API currently unavailable").isVisible();
-      },
-      { intervals: [100], timeout: 10000 },
-    )
+    .poll(async () => {
+      await page.clock.runFor(5000);
+      return page.getByText("API currently unavailable").isVisible();
+    })
     .toBe(true);
+  await expect(page.getByText("API currently unavailable")).toBeVisible();
+  expect(failedProbes).toBe(4);
   offline = false;
   await page.clock.fastForward(30000);
   await expect(page.getByText("All systems ready")).toBeVisible();
+  expect(
+    await page.evaluate((original) => original === document, originalDocument),
+  ).toBe(true);
 });
 
 test("create, edit and resume a browser-owned project through the real stack", async ({
