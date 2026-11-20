@@ -359,6 +359,7 @@
         "Queue throughput or isolation needs exceed the application database."
       ],
       "selection_rules": [
+        "document_jobs_penalty",
         "jobs",
         "small",
         "low_ops"
@@ -397,6 +398,7 @@
         "Python job throughput needs dedicated queue capacity."
       ],
       "selection_rules": [
+        "document_jobs",
         "jobs",
         "realtime",
         "no_jobs"
@@ -1165,6 +1167,26 @@
       },
       "weight": 40,
       "reason": "Background jobs need durable retryable processing."
+    },
+    {
+      "id": "document_jobs_penalty",
+      "description": "A document-store application should not add PostgreSQL solely for its job queue.",
+      "when": {
+        "data_shape": "document",
+        "background_jobs": "yes"
+      },
+      "weight": -100,
+      "reason": "A document-store application should not add PostgreSQL solely for its job queue."
+    },
+    {
+      "id": "document_jobs",
+      "description": "A Redis-backed worker can process jobs independently of the application document store.",
+      "when": {
+        "data_shape": "document",
+        "background_jobs": "yes"
+      },
+      "weight": 50,
+      "reason": "A Redis-backed worker can process jobs independently of the application document store."
     },
     {
       "id": "no_jobs",

@@ -121,6 +121,22 @@ def test_integration_kinds_affect_ranking(kind: str, expected: str) -> None:
     assert baseline_entry and category.recommendation.score > baseline_entry.score
 
 
+@pytest.mark.parametrize("scale", ["small", "medium", "large"])
+@pytest.mark.parametrize("ops", ["low", "medium", "high"])
+def test_document_jobs_do_not_require_postgres(scale: str, ops: str) -> None:
+    output = result(
+        data_shape="document", background_jobs="yes", scale=scale, ops_capability=ops
+    )
+    selected = {r.category: r.recommendation for r in output.recommendations}
+    assert selected["database"] and selected["database"].id == "mongodb"
+    queue = selected["cache_queue"]
+    assert queue and queue.id == "redis-rq"
+    assert "document_jobs" in [m.rule_id for m in queue.positive_matches]
+    category = next(r for r in output.recommendations if r.category == "cache_queue")
+    postgres = next(e for e in category.alternatives if e.id == "postgres-jobs")
+    assert "document_jobs_penalty" in [m.rule_id for m in postgres.negative_matches]
+
+
 def test_sample_detection_and_evidence() -> None:
     requirements = [
         {"title": t, "description": d, "acceptance_criteria": c}
