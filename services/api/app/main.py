@@ -1,5 +1,6 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Mapping
 from contextlib import asynccontextmanager
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -13,8 +14,22 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.core.errors import ErrorResponse
 from app.core.middleware import CorrelationID, JsonCORS, RequestSafety
 from app.core.settings import Settings, database_url
+from app.modules.discovery.router import router as discovery_router
 from app.modules.projects.router import router
+from app.modules.requirements.router import router as requirements_router
 from app.telemetry.setup import configure_telemetry
+
+
+def field_error(error: Mapping[str, Any]) -> dict[str, str]:
+    location = [str(part) for part in error.get("loc", ()) if part not in ("body",)]
+    if location and location[0] in ("header", "query", "path"):
+        location = location[1:]
+    message = str(error.get("msg", "Invalid value")).removeprefix("Value error, ")
+    if error.get("type") == "extra_forbidden":
+        message = "Unknown field"
+    elif error.get("type") == "missing":
+        message = "This field is required"
+    return {"field": ".".join(location), "message": message}
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -40,7 +55,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
         responses={
             status: {"model": ErrorResponse}
-            for status in (400, 404, 405, 413, 422, 429, 500, 503)
+            for status in (400, 403, 404, 405, 413, 422, 429, 500, 503)
         },
     )
     app.state.engine = engine
@@ -66,13 +81,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def validation_error(
         request: Request, exc: RequestValidationError
     ) -> JSONResponse:
+        fields = [field_error(error) for error in exc.errors()]
         return JSONResponse(
             status_code=422,
             content={
                 "error": {
                     "code": "validation_error",
-                    "message": "Invalid request",
+                    "message": "; ".join(
+                        f"{item['field']}: {item['message']}"
+                        if item["field"]
+                        else item["message"]
+                        for item in fields
+                    )
+                    or "Invalid request",
                     "correlation_id": request.state.correlation_id,
+                    "fields": fields,
                 }
             },
         )
@@ -91,11 +114,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"status": "ready"}
 
     app.include_router(router)
+    app.include_router(discovery_router)
+    app.include_router(requirements_router)
     app.add_middleware(RequestSafety)
     app.add_middleware(
         JsonCORS,
         allow_origins=settings.cors_origins,
-        allow_methods=["GET", "POST"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Content-Type", "X-Correlation-ID", "X-Project-Token"],
         expose_headers=["X-Correlation-ID"],
     )

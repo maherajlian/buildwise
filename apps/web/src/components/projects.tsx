@@ -1,11 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FolderKanban, Plus, ArrowDown } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FolderKanban, Plus, ArrowDown, Eye } from "lucide-react";
 import { api, ApiError, type Project } from "@/lib/api";
 import { getProjectToken } from "@/lib/token";
 import { Button } from "@/components/ui/button";
+import { FieldError, requiredError } from "@/components/form-error";
 
 export function Projects() {
+  const router = useRouter();
   const [items, setItems] = useState<Project[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,6 +70,11 @@ export function Projects() {
   }
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!name.trim()) {
+      setError(requiredError("name", "Project name"));
+      document.getElementById("name")?.focus();
+      return;
+    }
     setSaving(true);
     setError(undefined);
     setNotice("");
@@ -80,7 +89,8 @@ export function Projects() {
       ]);
       setName("");
       setDescription("");
-      setNotice(`Created “${project.name}”.`);
+      setNotice(`Created “${project.name}”. Opening discovery…`);
+      router.push(`/projects/view/?id=${project.id}&tab=discovery`);
     } catch (cause) {
       failure(cause);
     } finally {
@@ -135,7 +145,14 @@ export function Projects() {
                   <FolderKanban size={20} />
                 </span>
                 <div className="min-w-0">
-                  <h3 className="font-semibold break-words">{item.name}</h3>
+                  <h3 className="font-semibold break-words">
+                    <Link
+                      href={`/projects/view/?id=${item.id}`}
+                      className="project-link"
+                    >
+                      {item.name}
+                    </Link>
+                  </h3>
                   <p className="text-sm text-slate-500 break-words">
                     {item.description || "No description yet"}
                   </p>
@@ -144,6 +161,19 @@ export function Projects() {
               </li>
             ))}
           </ul>
+          <div className="sample-card">
+            <Eye size={18} aria-hidden />
+            <div className="min-w-0">
+              <p className="font-semibold">Not sure where to start?</p>
+              <p className="text-sm text-slate-500">
+                Explore an illustrative, read-only sample project with a
+                completed discovery and requirements.
+              </p>
+            </div>
+            <Link href="/projects/view/?id=sample" className="sample-link">
+              View sample project
+            </Link>
+          </div>
           {cursor && (
             <div className="p-5">
               <Button
@@ -162,7 +192,7 @@ export function Projects() {
             <h2>Create a project</h2>
             <Plus size={18} className="text-slate-400" />
           </div>
-          <form className="project-form" onSubmit={create}>
+          <form className="project-form" onSubmit={create} noValidate>
             <label htmlFor="name">
               Project name <span className="text-slate-500">(required)</span>
             </label>
@@ -172,8 +202,13 @@ export function Projects() {
               onChange={(event) => setName(event.target.value)}
               maxLength={200}
               required
+              aria-describedby="name-error"
+              aria-invalid={Boolean(
+                error?.fields.some((f) => f.field === "name"),
+              )}
               placeholder="e.g. Restaurant booking platform"
             />
+            <FieldError error={error} field="name" id="name-error" />
             <label htmlFor="description">
               Description <span className="text-slate-500">(optional)</span>
             </label>
@@ -189,7 +224,7 @@ export function Projects() {
               Saved to your browser’s private workspace. Clearing browser
               storage loses access. Don’t include sensitive information.
             </p>
-            <Button type="submit" disabled={saving || !name.trim()}>
+            <Button type="submit" disabled={saving}>
               <Plus size={16} />
               {saving ? "Creating…" : "Create project"}
             </Button>

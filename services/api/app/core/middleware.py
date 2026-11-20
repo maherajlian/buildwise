@@ -67,6 +67,10 @@ class CorrelationID:
         await self.app(scope, receive, wrapped_send)
 
 
+WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+WRITE_LIMIT = 120
+
+
 class RequestSafety:
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
@@ -127,7 +131,7 @@ class RequestSafety:
                 return
             if not message.get("more_body", False):
                 break
-        if scope["method"] == "POST":
+        if scope["method"] in WRITE_METHODS:
             key = str(scope.get("client", ("unknown",))[0])
             now = monotonic()
             since, count = self.writes.pop(key, (now, 0))
@@ -136,7 +140,7 @@ class RequestSafety:
             self.writes[key] = (since, count + 1)
             if len(self.writes) > 10000:
                 self.writes.popitem(last=False)
-            if count >= 30:
+            if count >= WRITE_LIMIT:
                 await reject(429, "rate_limited", "Too many write requests")
                 return
         delivered = False

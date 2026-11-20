@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
+from app.core.middleware import WRITE_LIMIT
 from app.core.settings import Settings
 from app.main import create_app
 from app.telemetry.setup import ExportFailureFilter, JsonFormatter
@@ -28,7 +29,13 @@ def client() -> Iterator[TestClient]:
 
 def assert_error(response: httpx.Response) -> None:
     assert set(response.json()) == {"error"}
-    assert set(response.json()["error"]) == {"code", "message", "correlation_id"}
+    assert {"code", "message", "correlation_id"} <= set(response.json()["error"])
+    assert set(response.json()["error"]) <= {
+        "code",
+        "message",
+        "correlation_id",
+        "fields",
+    }
     assert (
         response.json()["error"]["correlation_id"]
         == response.headers["x-correlation-id"]
@@ -194,8 +201,43 @@ def test_export_failure_logged_once_without_details() -> None:
 
 
 def test_write_rate_limit(client: TestClient) -> None:
-    for _ in range(30):
+    for _ in range(WRITE_LIMIT):
         client.post("/api/v1/projects", json={})
     response = client.post("/api/v1/projects", json={})
     assert response.status_code == 429
     assert_error(response)
+
+
+def test_validation_fields(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/projects",
+        json={"name": " ", "extra": 1},
+        headers={"X-Project-Token": "a" * 43},
+    )
+    assert response.status_code == 422
+    assert_error(response)
+    fields = {
+        item["field"]: item["message"] for item in response.json()["error"]["fields"]
+    }
+    assert fields["name"] == "Name must not be blank"
+    assert fields["extra"] == "Unknown field"
+    assert "name: Name must not be blank" in response.json()["error"]["message"]
+
+
+def test_missing_token_is_field_error(client: TestClient) -> None:
+    response = client.post("/api/v1/projects", json={"name": "x"})
+    assert response.status_code == 422
+    assert response.json()["error"]["fields"] == [
+        {"field": "X-Project-Token", "message": "This field is required"}
+    ]
+
+
+def test_cors_allows_edit_methods(client: TestClient) -> None:
+    response = client.options(
+        "/api/v1/projects/x",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "PATCH",
+        },
+    )
+    assert "PATCH" in response.headers.get("access-control-allow-methods", "")

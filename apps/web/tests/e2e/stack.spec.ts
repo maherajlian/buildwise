@@ -55,11 +55,15 @@ test("dashboard detects an outage and recovers without reloading", async ({
   await expect(page.getByText("All systems ready")).toBeVisible();
 });
 
-test("create and list a browser-owned project through the real stack", async ({
+test("create, edit and resume a browser-owned project through the real stack", async ({
   page,
 }) => {
   await page.goto("/projects/");
   await expect(page.getByText("No projects yet")).toBeVisible();
+  await page
+    .getByRole("button", { name: "Create project", exact: true })
+    .click();
+  await expect(page.getByText("Enter a project name.")).toBeVisible();
   const name = `Browser integration ${Date.now()}`;
   await page.getByLabel("Project name").fill(name);
   await page
@@ -68,12 +72,63 @@ test("create and list a browser-owned project through the real stack", async ({
   await page
     .getByRole("button", { name: "Create project", exact: true })
     .click();
-  await expect(page.getByRole("heading", { name })).toBeVisible();
-  await page.reload();
-  await expect(page.getByRole("heading", { name })).toBeVisible();
+  await expect(page).toHaveURL(/\/projects\/view\/\?id=.+&tab=discovery/);
+  await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
   expect(
     await page.evaluate(() => localStorage.getItem("buildwise.project-token")),
   ).toMatch(/^[A-Za-z0-9_-]{43}$/);
+
+  await page.getByLabel(/Problem statement/).fill("Bookings are lost.");
+  await page.getByRole("button", { name: /Save and continue/ }).click();
+  await expect(
+    page.getByRole("heading", { name: /Step 2 of 7/ }),
+  ).toBeVisible();
+  await page.getByLabel(/Target users/).fill("Owners\nDiners");
+  await page.getByRole("button", { name: /Save draft/ }).click();
+  await expect(page.getByText("Progress saved.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel(/Target users/)).toHaveValue("Owners\nDiners");
+
+  await page.getByRole("tab", { name: "Requirements" }).click();
+  await page.getByLabel(/Title/).fill("Book a table online");
+  await page.getByLabel("Acceptance criteria").fill("Booking is confirmed");
+  await page.getByRole("button", { name: "Add requirement" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Book a table online" }),
+  ).toBeVisible();
+
+  await page.getByRole("tab", { name: "Overview" }).click();
+  await expect(page.getByText("2/6 steps")).toBeVisible();
+  const renamed = `${name} renamed`;
+  await page.getByLabel(/Project name/).fill(renamed);
+  await page.getByLabel("Status").selectOption("active");
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Project saved.")).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { level: 1, name: renamed }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "All projects" }).click();
+  await expect(page.getByRole("link", { name: renamed })).toBeVisible();
+});
+
+test("illustrative sample project is read-only", async ({ page }) => {
+  await page.goto("/projects/");
+  await page.getByRole("link", { name: "View sample project" }).click();
+  await expect(page.getByRole("note")).toContainText("read-only");
+  await expect(page.getByText("6/6 steps")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Save changes" })).toHaveCount(
+    0,
+  );
+  await page.getByRole("tab", { name: "Requirements" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Diner books a table online" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Edit/ })).toHaveCount(0);
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+    .analyze();
+  expect(results.violations).toEqual([]);
 });
 
 test("keyboard skip-link reaches main content", async ({ page }) => {

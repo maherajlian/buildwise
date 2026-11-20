@@ -162,9 +162,9 @@ export default function Dashboard() {
       <div className="foundation-note">
         <span className="dot" />
         <p>
-          <strong>A foundation, not a finished product.</strong> Project storage
-          is live. Discovery, recommendations and planning are coming in later
-          phases.
+          <strong>A foundation, not a finished product.</strong> Projects,
+          guided discovery and requirements are live. Recommendations and
+          planning are coming in later phases.
         </p>
       </div>
     </>

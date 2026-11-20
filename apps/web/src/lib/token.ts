@@ -12,3 +12,10 @@ export function getProjectToken(
   storage.setItem(KEY, token);
   return token;
 }
+export function readProjectToken(): string | undefined {
+  try {
+    return getProjectToken();
+  } catch {
+    return undefined;
+  }
+}

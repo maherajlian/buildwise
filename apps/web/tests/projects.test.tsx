@@ -9,6 +9,7 @@ const project: Project = {
   name: "Booking platform",
   description: "A useful system",
   status: "draft",
+  is_sample: false,
   created_at: "2026-11-20T00:00:00Z",
   updated_at: "2026-11-20T00:00:00Z",
 };
@@ -86,5 +87,48 @@ describe("projects", () => {
     );
     expect(await screen.findByRole("alert")).toHaveTextContent("create-id");
     expect(screen.getByLabelText(/Project name/)).toHaveValue(project.name);
+  });
+  it("explains why an empty project name cannot be created", async () => {
+    vi.spyOn(api, "projects").mockResolvedValue({
+      items: [],
+      next_cursor: null,
+    });
+    const create = vi.spyOn(api, "createProject");
+    render(<Projects />);
+    await screen.findByText("No projects yet");
+    await userEvent.type(screen.getByLabelText(/Project name/), "   ");
+    await userEvent.click(
+      screen.getByRole("button", { name: "Create project" }),
+    );
+    expect(
+      await screen.findByText("Enter a project name."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Project name is required.",
+    );
+    expect(screen.getByLabelText(/Project name/)).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(create).not.toHaveBeenCalled();
+  });
+  it("links to project workspaces and the sample", async () => {
+    vi.spyOn(api, "projects").mockResolvedValue({
+      items: [project],
+      next_cursor: null,
+    });
+    render(<Projects />);
+    expect(
+      await screen.findByRole("link", { name: project.name }),
+    ).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/projects\/view\/?\?id=one$/),
+    );
+    expect(
+      screen.getByRole("link", { name: "View sample project" }),
+    ).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/projects\/view\/?\?id=sample$/),
+    );
   });
 });
