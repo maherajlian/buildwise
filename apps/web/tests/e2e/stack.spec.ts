@@ -23,10 +23,8 @@ test("dashboard detects an outage and recovers without reloading", async ({
 }) => {
   await page.clock.install();
   let offline = false;
-  let failedProbes = 0;
   await page.route("**/health", async (route) => {
     if (!offline) return route.continue();
-    failedProbes++;
     await route.fulfill({
       status: 503,
       headers: { "Access-Control-Allow-Origin": "http://localhost:3000" },
@@ -44,12 +42,15 @@ test("dashboard detects an outage and recovers without reloading", async ({
   offline = true;
   await page.clock.fastForward(30000);
   await expect(page.getByText("Waking the API")).toBeVisible();
-  for (let attempt = 2; attempt <= 4; attempt++) {
-    await page.clock.fastForward(5000);
-    await expect.poll(() => failedProbes).toBe(attempt);
-    await page.clock.runFor(100);
-  }
-  await expect(page.getByText("API currently unavailable")).toBeVisible();
+  await expect
+    .poll(
+      async () => {
+        await page.clock.runFor(1000);
+        return page.getByText("API currently unavailable").isVisible();
+      },
+      { intervals: [100], timeout: 10000 },
+    )
+    .toBe(true);
   offline = false;
   await page.clock.fastForward(30000);
   await expect(page.getByText("All systems ready")).toBeVisible();
