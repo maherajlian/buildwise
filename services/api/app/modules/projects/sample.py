@@ -2,6 +2,7 @@ from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from app.modules.discovery.schemas import DiscoveryAnswers
+from app.modules.operations.service import generate as generate_operations
 from app.modules.planning.service import generate as generate_plan
 from app.modules.projects.access import SAMPLE_PROJECT_ID
 from app.modules.projects.models import Discovery, Project, Requirement
@@ -139,5 +140,6 @@ def seed_sample(session: Session) -> Project:
     catalogue = load_catalogue()
     generate_artefacts(session, project, catalogue, overwrite_edited=True)
     generate_plan(session, project, catalogue, overwrite=True)
+    generate_operations(session, project, catalogue, replace_edited=True)
     session.commit()
     return project

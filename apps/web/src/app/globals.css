@@ -1359,6 +1359,60 @@ h1 {
   text-decoration: underline;
   color: #17624e;
 }
+.operations-page { min-width: 0; }
+.operations-page > header { padding-bottom: 24px; border-bottom: 1px solid #dce4e9; }
+.operations-page h2 { font-size: 22px; font-weight: 650; }
+.operations-page h3 { font-size: 17px; font-weight: 650; }
+.operations-page h4 { font-weight: 650; }
+.operations-section { margin-top: 32px; scroll-margin-top: 24px; }
+.operations-section > .tech-title { margin-bottom: 18px; }
+.operations-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0 26px; }
+.operations-summary > div { background: #f5f8fa; border: 1px solid #d8e2e9; border-top: 3px solid #8594a7; border-radius: 8px; padding: 14px; }
+.operations-summary dt { color: #475569; font-size: 12px; font-weight: 600; }
+.operations-summary dd { font-size: 26px; font-weight: 650; margin-top: 6px; }
+.operations-summary .execution-summary { border-top-color: #217562; background: #f1f8f5; }
+.test-category { margin: 24px 0; }
+.test-category > h3 { margin-bottom: 12px; }
+.operations-cases { display: grid; gap: 12px; }
+.operation-case { border-left: 3px solid #b5c9d5; }
+.operation-case > p { margin-top: 10px; white-space: pre-wrap; }
+.operation-source { color: #526174; font-size: 12px; font-weight: 400; margin-top: 8px; }
+.operation-status { display: inline-block; border: 1px solid #b9c8d5; background: #f3f6fa; border-radius: 5px; padding: 4px 9px; font-size: 12px; font-weight: 650; white-space: nowrap; }
+.operation-status.is-proposed { border-style: dashed; }
+.operation-status.is-executed { background: #e8f5ed; border-color: #388363; color: #16543e; }
+.operation-result { border: 1px solid #b9d7cc; background: #f1f8f5; border-radius: 8px; padding: 16px; margin: 12px 0; }
+.operations-page details { margin-top: 12px; }
+.operation-form { margin: 16px 0; max-width: 640px; }
+.operation-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; }
+.operation-form input, .operation-form select, .operation-form textarea { width: 100%; min-width: 0; border: 1px solid #a8b8c6; border-radius: 6px; padding: 9px; background: white; color: #172b3c; font: inherit; }
+.operation-form fieldset { display: grid; gap: 12px; }
+.operation-form legend { padding: 0 5px; font-weight: 650; }
+.operations-table-wrap { overflow-x: auto; border: 1px solid #dce4e9; border-radius: 8px; background: white; }
+.operations-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.operations-table th, .operations-table td { padding: 14px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid #e2e8ee; }
+.operations-table thead { background: #f3f7f9; color: #475569; font-size: 12px; }
+.operations-table th[scope="row"] { min-width: 200px; max-width: 300px; }
+.operations-table td:last-child details[open] { min-width: 280px; }
+.risk-score { display: inline-block; border-radius: 4px; padding: 3px 8px; background: #fff1d5; color: #755011; }
+.operations-slos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.slo-target { font-size: 24px; font-weight: 650; color: #17624e; margin: 18px 0; }
+.slo-target span { font-size: 13px; font-weight: 400; color: #526174; }
+.operation-definition dt { font-size: 12px; font-weight: 650; margin-top: 14px; color: #526174; }
+.operation-definition dd { font-size: 13px; margin-top: 4px; white-space: pre-wrap; }
+.observability-practices { display: grid; gap: 24px; }
+.observability-practices h2 { font-size: 20px; font-weight: 650; margin-bottom: 12px; }
+.observability-practices li + li { margin-top: 10px; }
+.observability-practices ul, .observability-practices ol { padding-left: 24px; list-style: revert; }
+.observability-practices code { background: #edf2f5; padding: 2px 4px; border-radius: 3px; }
+@media (max-width: 1000px) {
+  .operations-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .operations-slos { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .operations-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .operations-page > header { display: block; }
+  .operations-page > header > .tech-badges { margin-top: 16px; }
+}
 @media (max-width: 760px) {
   .input-grid,
   .catalogue-grid {

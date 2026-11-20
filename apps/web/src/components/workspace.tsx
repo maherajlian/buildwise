@@ -23,6 +23,7 @@ import { Requirements } from "@/components/requirements";
 import { Architecture } from "@/components/architecture";
 import { Specifications } from "@/components/specifications";
 import { BuildPlan } from "@/components/build-plan";
+import { OperationsPanel } from "@/components/operations";
 
 const TABS = [
   "overview",
@@ -31,6 +32,7 @@ const TABS = [
   "architecture",
   "specs",
   "plan",
+  "operations",
 ] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, string> = {
@@ -40,6 +42,7 @@ const TAB_LABELS: Record<Tab, string> = {
   architecture: "Architecture",
   specs: "Specs",
   plan: "Plan",
+  operations: "Validate & Operate",
 };
 const STEP_LABELS: Record<string, string> = {
   problem: "Problem",
@@ -203,6 +206,9 @@ export function Workspace() {
         )}
         {tab === "plan" && (
           <BuildPlan projectId={project.id} readOnly={readOnly} />
+        )}
+        {tab === "operations" && (
+          <OperationsPanel projectId={project.id} readOnly={readOnly} />
         )}
       </div>
     </>
