@@ -21,7 +21,7 @@ test("generate a requirement-based plan, record evidence, edit a risk and export
     page.getByRole("heading", { name: "Schedule launch safely", exact: true }),
   ).toBeVisible();
   await page
-    .getByRole("tab", { name: "Validate & Operate", exact: true })
+    .getByRole("tab", { name: "Operations", exact: true })
     .click();
   await expect(page).toHaveURL(/tab=operations/);
   await page

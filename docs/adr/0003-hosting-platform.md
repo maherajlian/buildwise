@@ -1,8 +1,8 @@
 # ADR-0003: Frontend, backend and database hosting
 
-- Status: Proposed (confirmed or revised by the deployment spike)
+- Status: Accepted for the public demo
 - Date: 2026-11-20
-- Evidence: `docs/hosting/free-tier-assessment.md` (verified 2026-11-20)
+- Evidence: [provider terms](../hosting/free-tier-assessment.md) and [deployment spike](../hosting/deployment-spike-results.md)
 
 ## Decision
 | Component | Choice | Key free-tier facts | Accepted limitation |

@@ -5,6 +5,7 @@ export type Project = components["schemas"]["ProjectRead"];
 export type ProjectPage = components["schemas"]["ProjectPage"];
 export type ProjectUpdate = components["schemas"]["ProjectUpdate"];
 export type ProjectOverview = components["schemas"]["ProjectOverview"];
+export type RecentProject = components["schemas"]["RecentProject"];
 export type Discovery = components["schemas"]["DiscoveryRead"];
 export type DiscoveryAnswers = components["schemas"]["DiscoveryAnswers"];
 export type DiscoveryWrite = components["schemas"]["DiscoveryWrite"];
@@ -79,6 +80,17 @@ export function createApi(
     }
   }
   return {
+    dashboard: (token: string) =>
+      checked<RecentProject[]>(() =>
+        client.GET("/api/v1/dashboard", { params: { header: auth(token) } }),
+      ),
+    projectPack: (token: string | undefined, id: string) =>
+      checked<string>(() =>
+        client.GET("/api/v1/projects/{project_id}/export/markdown", {
+          params: { path: { project_id: id }, header: optionalAuth(token) },
+          parseAs: "text",
+        }),
+      ),
     operations: async (
       token: string | undefined,
       id: string,

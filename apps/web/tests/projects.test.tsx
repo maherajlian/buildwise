@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Projects } from "@/components/projects";
 import { api, ApiError, type Project } from "@/lib/api";
+import { getProjectToken } from "@/lib/token";
 
 const project: Project = {
   id: "one",
@@ -38,6 +39,7 @@ describe("projects", () => {
     expect(screen.getByLabelText(/Project name/)).toHaveValue("");
   });
   it("loads existing projects and another page", async () => {
+    getProjectToken();
     vi.spyOn(api, "projects")
       .mockResolvedValueOnce({ items: [project], next_cursor: "next" })
       .mockResolvedValueOnce({
@@ -58,6 +60,7 @@ describe("projects", () => {
     ).not.toBeInTheDocument();
   });
   it("shows standard load errors and lets the user retry", async () => {
+    getProjectToken();
     vi.spyOn(api, "projects")
       .mockRejectedValueOnce(new ApiError("Database unavailable", "load-id"))
       .mockResolvedValueOnce({ items: [], next_cursor: null });
@@ -116,6 +119,7 @@ describe("projects", () => {
     ).not.toBeInTheDocument();
   });
   it("links to project workspaces and the sample", async () => {
+    getProjectToken();
     vi.spyOn(api, "projects").mockResolvedValue({
       items: [project],
       next_cursor: null,

@@ -71,6 +71,49 @@ def test_edited_operations_plans_keep_legacy_keys_until_explicit_overwrite(
     assert key in {section["key"] for section in replaced["sections"]}
 
 
+def test_project_pack_and_recent_dashboard_are_owner_scoped(
+    client: TestClient, migrated_url: str
+) -> None:
+    owner = token()
+    stranger = token()
+    base = project(client, owner)
+    url = base + "/export/markdown"
+    for headers in ({}, stranger):
+        response = client.get(url, headers=headers)
+        assert response.status_code == 404
+        assert response.json()["error"]["correlation_id"]
+    empty = client.get(url, headers=owner)
+    assert empty.status_code == 200
+    assert empty.headers["content-type"].startswith("text/markdown")
+    assert empty.headers["cache-control"] == "private, no-store"
+    assert "TODO: generate artefacts" in empty.text
+    assert "TODO: generate a build plan" in empty.text
+
+    assert client.get("/api/v1/dashboard", headers=stranger).json() == []
+    items = client.get("/api/v1/dashboard", headers=owner).json()
+    assert items[0]["name"] == "Orbit"
+    assert items[0]["stage"] == "Discovery"
+
+    with Session(create_engine(migrated_url)) as session:
+        seed_sample(session)
+    sample = client.get(f"/api/v1/projects/{SAMPLE_PROJECT_ID}/export/markdown")
+    assert sample.status_code == 200
+    for section in (
+        "## Project brief",
+        "## Technology recommendations",
+        "### Product requirements document",
+        "### Technical design document",
+        "#### Architecture overview",
+        "#### API outline",
+        "### User stories",
+        "Given an available slot",
+        "#### Security",
+        "Build plan",
+        "## Validate and operate",
+    ):
+        assert section in sample.text
+
+
 def test_specifications_generation_edit_adr_export(client: TestClient) -> None:
     owner = token()
     base = project(client, owner)

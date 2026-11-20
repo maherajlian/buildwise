@@ -1,10 +1,27 @@
 # BuildWise
 
-A zero-paid-AI engineering workbench, from idea to observable deployment.
-Phase 1 includes the API/database foundation and a statically exported Next.js workspace.
-Projects are live; unfinished frontend sections are clearly labelled placeholders.
-Backend observability is available through the optional local
-LGTM profile. No runtime model or paid inference service is used.
+BuildWise turns an idea into a project brief, explainable technology choices,
+editable specifications and a delivery plan. It uses deterministic rules and
+templates; there is no model, prompt or inference key.
+
+**[Open the live demo](https://buildwise-1fy.pages.dev/)** ·
+**[Explore the sample project](https://buildwise-1fy.pages.dev/projects/view/?id=sample)** ·
+[Follow the walkthrough](docs/demo-walkthrough.md)
+
+The sample is a fictional restaurant booking SaaS. No account is needed:
+review its discovery, compare architecture options, inspect its tasks and
+proposed tests, and download the complete Markdown pack from **Overview**.
+
+## Known limitations
+
+- Use synthetic data. Personal projects belong to one browser token, not an
+  account. There is no collaboration or recovery if you clear that token.
+- Projects inactive for 30 days are eligible for deletion when a new project
+  is created. Export work you want to keep; the public sample is exempt.
+- Generated plans are drafts. BuildWise does not deploy your project, execute
+  tests, or call suggested integrations or AI providers.
+- Free hosting has cold starts, capacity limits and no uptime guarantee. See
+  the [free-tier assessment](docs/hosting/free-tier-assessment.md).
 
 ## Local setup
 
@@ -12,13 +29,16 @@ Requires Docker Compose, Node.js 22.12+ (24 LTS recommended), pnpm 12.16.1,
 and Python 3.12 + uv for API development. Activate your Node environment first.
 
 ```sh
+git clone https://github.com/maherajlian/buildwise.git
+cd buildwise
 docker compose up -d --build api
+curl --fail --retry 20 --retry-all-errors --retry-delay 2 http://localhost:8000/ready
 pnpm install --frozen-lockfile
 pnpm dev
 ```
 
 Open http://localhost:3000. The API is at http://localhost:8000; Compose runs migrations
-automatically and restricts browser CORS to http://localhost:3000. Use that exact web
+and seeds the sample automatically. Browser CORS is restricted to http://localhost:3000. Use that exact web
 origin (not 127.0.0.1) or explicitly configure `CORS_ORIGINS` as a JSON array.
 For API-only development and tests, see [services/api/README.md](services/api/README.md).
 
@@ -27,11 +47,6 @@ The web app reads `NEXT_PUBLIC_API_BASE_URL` at build/dev startup (default:
 `apps/web/.env.local` with that value, then rebuild. Never place secrets in
 `NEXT_PUBLIC_*`. Root `.env.example` documents local fake settings; Compose reads
 root `.env`, while Next.js reads its own app directory.
-
-Projects are private to a browser-generated bearer token stored in localStorage.
-Losing/clearing browser storage loses access; do not enter sensitive information.
-There are no accounts or cross-device recovery yet. API cold starts are handled
-with bounded retries; the dashboard checks both liveness and database readiness.
 
 ## Frontend checks
 
@@ -53,50 +68,15 @@ written to ignored `apps/web/test-results/`. To inspect the export yourself:
 `pnpm -C apps/web serve`. Development uses `pnpm dev` instead of a Compose web
 service so the browser always uses the public localhost API URL.
 
-## API contract
+## Architecture and API
 
-### Specifications and Build planning (Phase 4 backend)
-
-Under `/api/v1/projects/{id}`, `POST /artefacts/generate` deterministically produces
-13 editable document kinds from discovery, requirements and effective recommendations.
-`GET /artefacts`, `GET/PATCH/DELETE /artefacts/{aid}`, and `POST /artefacts` (new ADR)
-manage structured sections. Edited documents survive regeneration unless
-`overwrite_edited=true`. `GET /artefacts/{aid}/markdown` and
-`GET /artefacts/export/markdown` export readable Markdown with project context.
-
-`POST /plan/generate` creates epics and tasks (`overwrite=true` replaces a plan).
-`GET /plan` includes dependency validation; `POST /plan/tasks` and
-`POST /plan/epics`, with `PATCH/DELETE /plan/tasks/{tid}` and
-`PATCH/DELETE /plan/epics/{eid}`, support manual planning. Dependencies must exist
-in the same project, be acyclic and not refer to self; active/review/done tasks
-require all dependencies done (422 otherwise). `GET /plan/export/markdown` exports
-the complete plan. Reads require the project token except for the read-only public
-sample; writes refresh project activity. No AI inference or frontend changes.
-See [API details](services/api/README.md#phase-4-specify-and-build-planning-backend).
-
-### Deterministic recommendations (Phase 3)
-
-`GET /api/v1/catalogue` exposes the curated catalogue and rules without a token.
-`GET /api/v1/projects/{id}/recommendations` explains scores, alternatives, input
-evidence and trade-offs. Project access uses the same token/sample rules as discovery.
-Read or replace overrides at `GET|PUT /api/v1/projects/{id}/recommendation-inputs`;
-PUT takes `{"overrides":{"budget":"zero"}}`. Omit keys to return them to automatic
-detection (an empty object resets all); null and unknown values are rejected.
-The sample remains read-only. No model or external API is called during generation.
-AI candidates are never recommended without explicit `ai_layer: "required"`;
-they remain optional and may incur cost. Scores are a decision aid, not benchmarks.
-
-Catalogue content and JSON Schema are in
-`services/api/app/modules/recommendations/catalogue/` so Docker includes them.
-Review provider terms and pricing before use; every pricing/free-tier claim requires
-verification. Bump `catalogue_version` for content/rule changes and `rules_version`
-for detection/scoring changes, update review dates, and run API tests.
-
-Open a project's **Architecture** tab to inspect inputs, evidence, positive/negative
-rules and expandable alternatives. Owned projects can save overrides or return
-individual inputs to Auto; the sample remains read-only. The public **Technology
-catalogue** page groups the same engine data by category, including costs, review
-dates and operational trade-offs. Neither screen calls a model or paid AI service.
+The static Next.js site calls a single FastAPI service backed by PostgreSQL.
+FastAPI serves the same versioned catalogue that its rule engine uses.
+See the [system design](docs/architecture/system-design.md),
+[ADRs](docs/adr/), [API developer guide](services/api/README.md) and
+[live OpenAPI reference](https://buildwise-api-p4yq.onrender.com/docs).
+The full pack is available at `GET /api/v1/projects/{id}/export/markdown`.
+Only the seeded sample can be read without its browser token.
 
 ```sh
 # After changing FastAPI routes/schemas:
@@ -109,10 +89,6 @@ pnpm generate:types
 Commit both `packages/shared-types/openapi.json` and generated `api.d.ts`. The web
 client uses `openapi-fetch` with those generated types. Browser owner tokens are
 created from 32 cryptographically random bytes and sent only in `X-Project-Token`.
-
-See [architecture](docs/architecture/system-design.md),
-[hosting assessment](docs/hosting/free-tier-assessment.md), and
-[implementation plan](docs/plan/implementation-proposal.md).
 
 ## Operations
 
@@ -174,8 +150,7 @@ this ping work. The workflow itself does not change Render's Free plan.
 can be delayed or skipped under load; this is not an availability guarantee.
 Scheduled workflows in public repositories automatically disable after **60
 days without repository activity**. Check Actions and re-enable if necessary,
-or disable the workflow intentionally to conserve Render hours. Pushing this
-feature branch alone does not activate its schedule.
+or disable the workflow intentionally to conserve Render hours.
 
 ## Contributing and CI
 
@@ -183,5 +158,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for branching, required checks and the
 Definition of Done, and [requirement traceability](docs/specs/traceability.md) for
 test coverage and known gaps. [CI](.github/workflows/ci.yml) checks the API, web,
 real-stack E2E flow and no-paid-AI policy on PRs and pushes to `main`.
-Dependencies are reviewed weekly with Dependabot. Deployment automation is not
-included yet. Licensed under [MIT](LICENSE).
+Dependabot checks dependencies weekly. Licensed under [MIT](LICENSE).

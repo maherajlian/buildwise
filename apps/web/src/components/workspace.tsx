@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Eye, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, Eye, Save, Trash2 } from "lucide-react";
 import {
   api,
   ApiError,
@@ -11,6 +11,7 @@ import {
   type ProjectUpdate,
 } from "@/lib/api";
 import { getProjectToken, readProjectToken } from "@/lib/token";
+import { downloadMarkdown } from "@/lib/download";
 import { Button } from "@/components/ui/button";
 import {
   ErrorBox,
@@ -32,6 +33,7 @@ const TABS = [
   "architecture",
   "specs",
   "plan",
+  "testing",
   "operations",
 ] as const;
 type Tab = (typeof TABS)[number];
@@ -42,7 +44,8 @@ const TAB_LABELS: Record<Tab, string> = {
   architecture: "Architecture",
   specs: "Specs",
   plan: "Plan",
-  operations: "Validate & Operate",
+  testing: "Testing",
+  operations: "Operations",
 };
 const STEP_LABELS: Record<string, string> = {
   problem: "Problem",
@@ -66,6 +69,8 @@ export function Workspace() {
   const [loading, setLoading] = useState(Boolean(requested));
 
   const [attempt, setAttempt] = useState(0);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<ApiError>();
 
   useEffect(() => {
     if (!requested) return;
@@ -129,6 +134,22 @@ export function Workspace() {
       </>
     );
   const readOnly = project.is_sample;
+  async function exportPack() {
+    if (!project) return;
+    setExporting(true);
+    setExportError(undefined);
+    try {
+      const pack = await api.projectPack(
+        project.is_sample ? undefined : readProjectToken(),
+        project.id,
+      );
+      downloadMarkdown(pack, "buildwise-project-pack.md");
+    } catch (cause) {
+      setExportError(toApiError(cause));
+    } finally {
+      setExporting(false);
+    }
+  }
   return (
     <>
       <BackLink />
@@ -148,8 +169,9 @@ export function Workspace() {
         <div className="sample-banner" role="note">
           <Eye size={18} aria-hidden />
           <p>
-            Illustrative sample, read-only. It shows a completed discovery for a
-            fictional product.{" "}
+            Illustrative sample, read-only. Follow this fictional product from
+            discovery through specs, delivery and operations.{" "}
+            <Link href="/guides/#walkthrough">Follow the walkthrough</Link> or{" "}
             <Link href="/projects/">Create your own project</Link> to edit.
           </p>
         </div>
@@ -185,12 +207,25 @@ export function Workspace() {
       </div>
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === "overview" && (
-          <Overview
+          <>
+            <div className="mb-5 flex flex-wrap items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => void exportPack()}
+                disabled={exporting}
+              >
+                <Download size={16} aria-hidden />
+                {exporting ? "Preparing Markdown…" : "Export project pack (Markdown)"}
+              </Button>
+            </div>
+            <ErrorBox error={exportError} />
+            <Overview
             project={project}
             onChange={setProject}
             onDeleted={() => router.push("/projects/")}
             onNavigate={select}
-          />
+            />
+          </>
         )}
         {tab === "discovery" && (
           <DiscoveryWizard projectId={project.id} readOnly={readOnly} />
@@ -207,8 +242,13 @@ export function Workspace() {
         {tab === "plan" && (
           <BuildPlan projectId={project.id} readOnly={readOnly} />
         )}
-        {tab === "operations" && (
-          <OperationsPanel projectId={project.id} readOnly={readOnly} />
+        {(tab === "testing" || tab === "operations") && (
+          <OperationsPanel
+            key={tab}
+            projectId={project.id}
+            readOnly={readOnly}
+            testingOnly={tab === "testing"}
+          />
         )}
       </div>
     </>

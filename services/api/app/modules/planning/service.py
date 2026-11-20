@@ -264,11 +264,11 @@ def generate(
     return read(session, project.id)
 
 
-def markdown(project: Project, plan: PlanRead) -> str:
+def markdown(project: Project, plan: PlanRead, *, level: int = 1) -> str:
     lines = [
-        f"# {project.name} — Build plan",
+        f"{'#' * level} {project.name} — Build plan",
         project.description,
-        "## Validation",
+        f"{'#' * (level + 1)} Validation",
         "Valid" if plan.validation.valid else "; ".join(plan.validation.errors),
     ]
     by_id = {t.id: t.key for t in plan.tasks}
@@ -278,7 +278,7 @@ def markdown(project: Project, plan: PlanRead) -> str:
             continue
         lines.extend(
             [
-                f"## {epic.title if epic else 'Ungrouped tasks'}",
+                f"{'#' * (level + 1)} {epic.title if epic else 'Ungrouped tasks'}",
                 epic.description if epic else "",
             ]
         )
@@ -286,7 +286,7 @@ def markdown(project: Project, plan: PlanRead) -> str:
             fields: dict[str, Any] = task.model_dump()
             lines.extend(
                 [
-                    f"### {task.key}: {task.title}",
+                    f"{'#' * (level + 2)} {task.key}: {task.title}",
                     task.description,
                     f"Priority: {task.priority} | Status: {task.status}",
                     "Dependencies: "
@@ -297,9 +297,9 @@ def markdown(project: Project, plan: PlanRead) -> str:
                     f"Requirement: {task.requirement_id or 'None'}",
                     f"Skill/tool: {task.skill}",
                     f"Workflow: {task.workflow}",
-                    "#### Implementation notes",
+                    f"{'#' * (level + 3)} Implementation notes",
                     task.implementation_notes,
-                    "#### Acceptance criteria",
+                    f"{'#' * (level + 3)} Acceptance criteria",
                     "\n".join(f"- {c}" for c in fields["acceptance_criteria"])
                     or "TODO: define criteria",
                 ]

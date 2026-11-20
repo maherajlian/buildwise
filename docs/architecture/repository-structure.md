@@ -1,33 +1,34 @@
-# Proposed repository structure
+# Repository structure
 
-Follows blueprint §5 with three small changes (to be recorded in ADR-0005 if accepted): a `pnpm` workspace root, `services/api/alembic/`, and `docs/plan/` + `docs/runbooks/`.
+The repository uses a `pnpm` workspace and keeps API migrations in
+`services/api/alembic/`.
 
 ```text
 buildwise/
 ├── apps/web/                      # Next.js (App Router, TypeScript, static export), Tailwind + shadcn/ui
 │   ├── src/app/                   # routes: dashboard, projects, catalogue, guides, observability, docs
-│   ├── src/lib/api/               # typed client generated from OpenAPI (openapi-typescript)
+│   ├── src/lib/api.ts             # typed client using generated OpenAPI types
 │   └── tests/                     # Vitest unit + Playwright e2e/axe
 ├── services/api/                  # FastAPI modular monolith (Python 3.12, uv)
-│   ├── app/{api,core,db,telemetry}/
-│   ├── app/modules/{discovery,recommendations,specifications,planning,exports}/
+│   ├── app/{core,db,telemetry}/
+│   ├── app/modules/               # domains and workbench composition routes
 │   ├── app/main.py
 │   ├── alembic/                   # migrations
 │   ├── Dockerfile
 │   └── tests/{unit,integration}/  # pytest; integration uses a Postgres service container
 ├── packages/shared-types/         # generated OpenAPI schema + TS types (committed, checked for drift in CI)
-├── docs/{product,specs,architecture,adr,development,testing,observability,hosting,runbooks,plan}/
+├── docs/{specs,architecture,adr,hosting,operations,plan}/
 ├── infra/
-│   ├── docker/                    # local compose overrides
 │   └── grafana/{dashboards,alerts}/
-├── .github/workflows/             # ci.yml (PR), deploy.yml (main)
-├── docker-compose.yml             # web + api + postgres; `--profile observability` adds grafana/otel-lgtm
+├── .github/workflows/             # CI, production deploy and keep-warm
+├── docker-compose.yml             # API + PostgreSQL; optional grafana/otel-lgtm
 ├── .env.example
 ├── README.md
 └── CONTRIBUTING.md
 ```
 
-Tooling choices: `uv` (Python deps/lock), `ruff` (lint+format), `mypy` (types), `pytest`; `pnpm`, `eslint`, `prettier`, `tsc`, `vitest`, `playwright` for the web app.
+Tooling: `uv`, `ruff`, `mypy`, `pytest` for Python; `pnpm`, `eslint`,
+`tsc`, `vitest`, `playwright` for the web app.
 
 Phase 3 backend catalogue lives at
 `services/api/app/modules/recommendations/catalogue/{catalogue.json,catalogue.schema.json}`
@@ -35,4 +36,4 @@ rather than root `data/`: it must ship inside the existing `services/api` Docker
 build context. The JSON contains both catalogue and rules versions. The public
 `GET /api/v1/catalogue` endpoint exposes the same validated data used by the engine.
 `recommendation_inputs` stores project overrides; generated recommendations are
-computed on read, not persisted. Planned folders/workflows above are not all implemented.
+computed on read, not persisted.

@@ -301,15 +301,15 @@ h1 {
   color: #506959;
   margin-bottom: 22px;
 }
-.hero-card button,
-.hero-card a {
+.hero-card a:not(.hero-footnote) {
   background: #244c3d;
 }
 .hero-footnote {
-  display: block;
-  font-size: 9px;
-  color: #506959;
+  display: table;
+  font-size: 12px;
+  color: #344f3e;
   margin-top: 16px;
+  text-decoration: underline;
 }
 .blueprint-art {
   margin: 32px 30px 28px 5px;
@@ -1203,6 +1203,9 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+.operations-section[hidden] {
+  display: none;
 }
 .technology-page h2 {
   font-size: 20px;
