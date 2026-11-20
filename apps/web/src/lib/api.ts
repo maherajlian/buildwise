@@ -80,10 +80,10 @@ export function createApi(
         }),
       ),
     sample: () => checked<Project>(() => client.GET("/api/v1/projects/sample")),
-    project: (token: string, id: string) =>
+    project: (token: string | undefined, id: string) =>
       checked<Project>(() =>
         client.GET("/api/v1/projects/{project_id}", {
-          params: { path: { project_id: id }, header: auth(token) },
+          params: { path: { project_id: id }, header: optionalAuth(token) },
         }),
       ),
     updateProject: (token: string, id: string, body: ProjectUpdate) =>
@@ -101,16 +101,16 @@ export function createApi(
           }),
         true,
       ),
-    overview: (token: string, id: string) =>
+    overview: (token: string | undefined, id: string) =>
       checked<ProjectOverview>(() =>
         client.GET("/api/v1/projects/{project_id}/overview", {
-          params: { path: { project_id: id }, header: auth(token) },
+          params: { path: { project_id: id }, header: optionalAuth(token) },
         }),
       ),
-    discovery: (token: string, id: string) =>
+    discovery: (token: string | undefined, id: string) =>
       checked<Discovery>(() =>
         client.GET("/api/v1/projects/{project_id}/discovery", {
-          params: { path: { project_id: id }, header: auth(token) },
+          params: { path: { project_id: id }, header: optionalAuth(token) },
         }),
       ),
     saveDiscovery: (token: string, id: string, body: DiscoveryWrite) =>
@@ -120,10 +120,10 @@ export function createApi(
           body,
         }),
       ),
-    requirements: (token: string, id: string) =>
+    requirements: (token: string | undefined, id: string) =>
       checked<Requirement[]>(() =>
         client.GET("/api/v1/projects/{project_id}/requirements", {
-          params: { path: { project_id: id }, header: auth(token) },
+          params: { path: { project_id: id }, header: optionalAuth(token) },
         }),
       ),
     createRequirement: (token: string, id: string, body: RequirementCreate) =>
@@ -152,21 +152,26 @@ export function createApi(
         ),
       ),
     deleteRequirement: (token: string, id: string, requirementId: string) =>
-      checked<void>(() =>
-        client.DELETE(
-          "/api/v1/projects/{project_id}/requirements/{requirement_id}",
-          {
-            params: {
-              path: { project_id: id, requirement_id: requirementId },
-              header: auth(token),
+      checked<void>(
+        () =>
+          client.DELETE(
+            "/api/v1/projects/{project_id}/requirements/{requirement_id}",
+            {
+              params: {
+                path: { project_id: id, requirement_id: requirementId },
+                header: auth(token),
+              },
             },
-          },
-        ),
+          ),
+        true,
       ),
   };
 }
 function auth(token: string) {
   return { "X-Project-Token": token };
+}
+function optionalAuth(token: string | undefined) {
+  return token ? auth(token) : {};
 }
 export function fieldMessage(error: ApiError | undefined, field: string) {
   return error?.fields.find((item) => item.field === field)?.message;

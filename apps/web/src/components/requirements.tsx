@@ -7,7 +7,7 @@ import {
   type Requirement,
   type RequirementCreate,
 } from "@/lib/api";
-import { getProjectToken } from "@/lib/token";
+import { getProjectToken, readProjectToken } from "@/lib/token";
 import { Button } from "@/components/ui/button";
 import {
   ErrorBox,
@@ -54,7 +54,7 @@ export function Requirements({
     let disposed = false;
     async function load() {
       try {
-        const value = await api.requirements(getProjectToken(), projectId);
+        const value = await api.requirements(readProjectToken(), projectId);
         if (!disposed) {
           setItems(value);
           setError(undefined);

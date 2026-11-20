@@ -10,7 +10,7 @@ import {
   type ProjectOverview,
   type ProjectUpdate,
 } from "@/lib/api";
-import { getProjectToken } from "@/lib/token";
+import { getProjectToken, readProjectToken } from "@/lib/token";
 import { Button } from "@/components/ui/button";
 import {
   ErrorBox,
@@ -59,7 +59,7 @@ export function Workspace() {
         const value =
           requested === "sample"
             ? await api.sample()
-            : await api.project(getProjectToken(), requested);
+            : await api.project(readProjectToken(), requested);
         if (!disposed) {
           setProject(value);
           setError(undefined);
@@ -213,7 +213,7 @@ function Overview({
     let disposed = false;
     async function load() {
       try {
-        const value = await api.overview(getProjectToken(), project.id);
+        const value = await api.overview(readProjectToken(), project.id);
         if (!disposed) {
           setOverview(value);
           setError(undefined);

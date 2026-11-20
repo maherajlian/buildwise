@@ -8,7 +8,7 @@ import {
   type DiscoveryAnswers,
   type DiscoveryWrite,
 } from "@/lib/api";
-import { getProjectToken } from "@/lib/token";
+import { getProjectToken, readProjectToken } from "@/lib/token";
 import { Button } from "@/components/ui/button";
 import { ErrorBox, lines, toApiError } from "@/components/form-error";
 
@@ -90,7 +90,7 @@ export function DiscoveryWizard({
     let disposed = false;
     async function load() {
       try {
-        const value = await api.discovery(getProjectToken(), projectId);
+        const value = await api.discovery(readProjectToken(), projectId);
         if (disposed) return;
         setDiscovery(value);
         setDraft(toDraft(value.answers));

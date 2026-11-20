@@ -66,6 +66,16 @@ describe("typed API client", () => {
     expect(request.headers.get("X-Project-Token")).toBe("owner");
     expect(await request.json()).toEqual({ name: "New project" });
   });
+  it("accepts empty 204 responses for deletes", async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 204 }));
+    const client = createApi("http://localhost", fetcher);
+    await expect(client.deleteProject("t", "p")).resolves.toBeUndefined();
+    await expect(
+      client.deleteRequirement("t", "p", "r"),
+    ).resolves.toBeUndefined();
+  });
   it("rejects an empty success response", async () => {
     const fetcher = vi
       .fn<typeof fetch>()
