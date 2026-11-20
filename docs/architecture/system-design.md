@@ -12,7 +12,8 @@ fingerprint. Evidence retains field paths and short excerpts. AI text only creat
 a note: only explicit `ai_layer=required` enables optional cost-dependent candidates.
 The public catalogue endpoint serves the same startup-validated catalogue used by
 the engine. Project endpoints reuse browser-token ownership and public read-only
-sample access. The Architecture UI is deferred.
+sample access. The static client fetches these endpoints for the Architecture tab
+and catalogue browser; owner overrides are saved with the existing project token.
 
 ```mermaid
 flowchart TD

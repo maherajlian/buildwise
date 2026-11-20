@@ -1,6 +1,27 @@
 import { describe, it, expect, vi } from "vitest";
 import { ApiError, createApi } from "@/lib/api";
 describe("typed API client", () => {
+  it("reads public catalogue and recommendation endpoints and puts owner overrides", async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockImplementation(
+        async () =>
+          new Response("{}", {
+            headers: { "Content-Type": "application/json" },
+          }),
+      );
+    const client = createApi("http://localhost:8000", fetcher);
+    await client.catalogue();
+    await client.recommendations(undefined, "sample");
+    await client.recommendationInputs("owner", "p1");
+    await client.saveRecommendationInputs("owner", "p1", { budget: "zero" });
+    const requests = fetcher.mock.calls.map(([request]) => request as Request);
+    expect(requests[0].url).toBe("http://localhost:8000/api/v1/catalogue");
+    expect(requests[1].headers.has("X-Project-Token")).toBe(false);
+    expect(requests[2].headers.get("X-Project-Token")).toBe("owner");
+    expect(requests[3].method).toBe("PUT");
+    expect(await requests[3].json()).toEqual({ overrides: { budget: "zero" } });
+  });
   it("sends project owner token and parses the page", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify({ items: [], next_cursor: null }), {

@@ -11,6 +11,13 @@ export type DiscoveryWrite = components["schemas"]["DiscoveryWrite"];
 export type Requirement = components["schemas"]["RequirementRead"];
 export type RequirementCreate = components["schemas"]["RequirementCreate"];
 export type RequirementUpdate = components["schemas"]["RequirementUpdate"];
+export type Catalogue = components["schemas"]["Catalogue"];
+export type CatalogueEntry = components["schemas"]["Entry"];
+export type RecommendationResult = components["schemas"]["Result"];
+export type ScoredEntry = components["schemas"]["ScoredEntry"];
+export type Signal = components["schemas"]["Signal"];
+export type RecommendationInputs = components["schemas"]["InputRead"];
+export type RecommendationOverrides = components["schemas"]["Overrides"];
 export type FieldError = components["schemas"]["FieldError"];
 export class ApiError extends Error {
   constructor(
@@ -56,6 +63,30 @@ export function createApi(
     }
   }
   return {
+    catalogue: () => checked<Catalogue>(() => client.GET("/api/v1/catalogue")),
+    recommendations: (token: string | undefined, id: string) =>
+      checked<RecommendationResult>(() =>
+        client.GET("/api/v1/projects/{project_id}/recommendations", {
+          params: { path: { project_id: id }, header: optionalAuth(token) },
+        }),
+      ),
+    recommendationInputs: (token: string | undefined, id: string) =>
+      checked<RecommendationInputs>(() =>
+        client.GET("/api/v1/projects/{project_id}/recommendation-inputs", {
+          params: { path: { project_id: id }, header: optionalAuth(token) },
+        }),
+      ),
+    saveRecommendationInputs: (
+      token: string,
+      id: string,
+      overrides: RecommendationOverrides,
+    ) =>
+      checked<RecommendationInputs>(() =>
+        client.PUT("/api/v1/projects/{project_id}/recommendation-inputs", {
+          params: { path: { project_id: id }, header: auth(token) },
+          body: { overrides },
+        }),
+      ),
     health: (signal?: AbortSignal) =>
       checked(() => client.GET("/health", { signal })),
     ready: (signal?: AbortSignal) =>
