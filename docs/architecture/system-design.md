@@ -4,6 +4,16 @@ Status: draft v0.1 (2026-11-20). Hosting targets are proposals pending the deplo
 
 ## Logical architecture
 
+Phase 3 backend derives versioned signals from discovery and requirements, with
+explicit overrides in `recommendation_inputs`. Its pure scoring engine sums matching
+catalogue rule weights and breaks ties by entry id. Generation performs no network
+calls and stores no result timestamps; canonical signal values produce a SHA-256
+fingerprint. Evidence retains field paths and short excerpts. AI text only creates
+a note: only explicit `ai_layer=required` enables optional cost-dependent candidates.
+The public catalogue endpoint serves the same startup-validated catalogue used by
+the engine. Project endpoints reuse browser-token ownership and public read-only
+sample access. The Architecture UI is deferred.
+
 ```mermaid
 flowchart TD
   B[Browser] -->|HTTPS| W[Next.js static frontend\nCloudflare Pages]
@@ -15,7 +25,7 @@ flowchart TD
     P --- X[Export service]
     H[/health /ready/]
   end
-  R -->|reads| C[(Versioned technology\ncatalogue in repo)]
+  R -->|reads| C[(Versioned technology\ncatalogue in API package)]
   A -->|SQLAlchemy + Alembic| DB[(PostgreSQL\nfree tier)]
   A -->|OTLP/HTTP, batched| G[Grafana Cloud Free\nMetrics · Logs · Traces]
   A -.->|local fallback| L[Local LGTM via Docker Compose]

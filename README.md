@@ -54,6 +54,25 @@ service so the browser always uses the public localhost API URL.
 
 ## API contract
 
+### Deterministic recommendations (Phase 3 backend)
+
+`GET /api/v1/catalogue` exposes the curated catalogue and rules without a token.
+`GET /api/v1/projects/{id}/recommendations` explains scores, alternatives, input
+evidence and trade-offs. Project access uses the same token/sample rules as discovery.
+Read or replace overrides at `GET|PUT /api/v1/projects/{id}/recommendation-inputs`;
+PUT takes `{"overrides":{"budget":"zero"}}`. Omit keys to return them to automatic
+detection (an empty object resets all); null and unknown values are rejected.
+The sample remains read-only. No model or external API is called during generation.
+AI candidates are never recommended without explicit `ai_layer: "required"`;
+they remain optional and may incur cost. Scores are a decision aid, not benchmarks.
+
+Catalogue content and JSON Schema are in
+`services/api/app/modules/recommendations/catalogue/` so Docker includes them.
+Review provider terms and pricing before use; every pricing/free-tier claim requires
+verification. Bump `catalogue_version` for content/rule changes and `rules_version`
+for detection/scoring changes, update review dates, and run API tests. The Architecture
+tab and catalogue browser are not implemented yet.
+
 ```sh
 # After changing FastAPI routes/schemas:
 cd services/api

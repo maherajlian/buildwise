@@ -1,0 +1,250 @@
+{
+  "$defs": {
+    "Entry": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "category": {
+          "enum": [
+            "frontend",
+            "backend",
+            "database",
+            "cache_queue",
+            "auth",
+            "hosting",
+            "ci_cd",
+            "observability",
+            "integrations",
+            "ai_layer"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "strengths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Strengths",
+          "type": "array"
+        },
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "project_fit": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Project Fit",
+          "type": "array"
+        },
+        "operational_complexity": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Operational Complexity",
+          "type": "string"
+        },
+        "operational_burden": {
+          "title": "Operational Burden",
+          "type": "string"
+        },
+        "cost_category": {
+          "enum": [
+            "free-tier",
+            "self-hosted",
+            "usage-based",
+            "paid",
+            "open-source-self-hosted-or-managed"
+          ],
+          "title": "Cost Category",
+          "type": "string"
+        },
+        "cost_note": {
+          "title": "Cost Note",
+          "type": "string"
+        },
+        "trade_offs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Trade Offs",
+          "type": "array"
+        },
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "change_conditions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Change Conditions",
+          "type": "array"
+        },
+        "selection_rules": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Selection Rules",
+          "type": "array"
+        },
+        "optional": {
+          "title": "Optional",
+          "type": "boolean"
+        },
+        "last_reviewed": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Last Reviewed",
+          "type": "string"
+        },
+        "links": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Links",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "category",
+        "summary",
+        "strengths",
+        "constraints",
+        "project_fit",
+        "operational_complexity",
+        "operational_burden",
+        "cost_category",
+        "cost_note",
+        "trade_offs",
+        "assumptions",
+        "change_conditions",
+        "selection_rules",
+        "optional",
+        "last_reviewed"
+      ],
+      "title": "Entry",
+      "type": "object"
+    },
+    "Rule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "title": "When",
+          "type": "object"
+        },
+        "weight": {
+          "title": "Weight",
+          "type": "integer"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "when",
+        "weight",
+        "reason"
+      ],
+      "title": "Rule",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "catalogue_version": {
+      "title": "Catalogue Version",
+      "type": "string"
+    },
+    "rules_version": {
+      "title": "Rules Version",
+      "type": "string"
+    },
+    "entries": {
+      "items": {
+        "$ref": "#/$defs/Entry"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "rules": {
+      "items": {
+        "$ref": "#/$defs/Rule"
+      },
+      "title": "Rules",
+      "type": "array"
+    },
+    "categories": {
+      "items": {
+        "enum": [
+          "frontend",
+          "backend",
+          "database",
+          "cache_queue",
+          "auth",
+          "hosting",
+          "ci_cd",
+          "observability",
+          "integrations",
+          "ai_layer"
+        ],
+        "type": "string"
+      },
+      "title": "Categories",
+      "type": "array"
+    }
+  },
+  "required": [
+    "catalogue_version",
+    "rules_version",
+    "entries",
+    "rules"
+  ],
+  "title": "Catalogue",
+  "type": "object"
+}

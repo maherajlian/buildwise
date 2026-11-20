@@ -1,4 +1,4 @@
-# Phase 0/1 requirement traceability
+# Requirement traceability (through Phase 3 backend)
 
 Scope: the foundation API, static frontend and CI. References below are executable
 test names, not claims that an entire product requirement is complete. Requirements
@@ -15,6 +15,10 @@ Test path abbreviations:
 
 | Requirement | Tests / automated checks | Coverage and remaining gaps |
 |---|---|---|
+| FR-005 — deterministic recommendations | API unit `test_default_rules_every_category`, `test_jobs_and_data_rules`, `test_kubernetes_requires_scale_and_operators`, `test_reproducible_no_network`; integration `test_recommendation_endpoints` | Ten categories, deterministic scores/ties/fingerprint, reasons/evidence, alternatives and trade-offs; no network during generation. Architecture UI pending. |
+| FR-006 — versioned catalogue | API unit `test_catalogue_schema_and_references`, `test_catalogue_fails_fast` | 30 entries in API package, JSON Schema validation in pytest/CI, Pydantic startup validation, review dates and rule-reference checks. Pricing claims require verification. |
+| FR-007 — optional AI | API unit `test_ai_is_only_explicit_and_word_boundaries`; integration `test_recommendation_endpoints` | Default/detected AI is not recommended; explicit required enables optional cost-dependent candidates, never calls a model. UI pending. |
+| FR-018 — catalogue browser | API integration `test_recommendation_endpoints` | Public catalogue endpoint serves engine data; browser remains a placeholder, not complete. |
 | FR-001 — project CRUD | API integration `test_migrations_ready_and_projects`, `test_database_constraints`, `test_project_get_update_delete`; API unit `test_validation_fields`; Web `projects.test.tsx`, `workspace.test.tsx`; E2E `create, edit and resume a browser-owned project through the real stack` | Create, list, get, update (PATCH) and delete with browser ownership (other tokens get 404), field-level validation errors (`error.fields`), inline empty-name messages, persistence across reload. |
 | FR-003 — guided discovery | API integration `test_discovery_partial_save_and_resume`; Web `workspace.test.tsx`; E2E create/edit/resume | Six-step questionnaire plus review; each step saves partial answers and the current step, and the wizard resumes on the saved step. |
 | FR-004 — requirements | API integration `test_requirements_crud`; Web `workspace.test.tsx`; E2E create/edit/resume | Functional/non-functional requirements with priority, status and acceptance criteria; create, edit, delete, filter; max 200 per project. |

@@ -2044,10 +2044,602 @@
           }
         }
       }
+    },
+    "/api/v1/catalogue": {
+      "get": {
+        "tags": [
+          "recommendations"
+        ],
+        "summary": "Read Catalogue",
+        "operationId": "read_catalogue_api_v1_catalogue_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Catalogue"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/recommendations": {
+      "get": {
+        "tags": [
+          "recommendations"
+        ],
+        "summary": "Read Recommendations",
+        "operationId": "read_recommendations_api_v1_projects__project_id__recommendations_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "X-Project-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 43,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Project-Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Method Not Allowed"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/recommendation-inputs": {
+      "get": {
+        "tags": [
+          "recommendations"
+        ],
+        "summary": "Read Inputs",
+        "operationId": "read_inputs_api_v1_projects__project_id__recommendation_inputs_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "X-Project-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 43,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_-]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Project-Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InputRead"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Method Not Allowed"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "recommendations"
+        ],
+        "summary": "Save Inputs",
+        "operationId": "save_inputs_api_v1_projects__project_id__recommendation_inputs_put",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "X-Project-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 43,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "X-Project-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InputWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InputRead"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Method Not Allowed"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Catalogue": {
+        "properties": {
+          "catalogue_version": {
+            "type": "string",
+            "title": "Catalogue Version"
+          },
+          "rules_version": {
+            "type": "string",
+            "title": "Rules Version"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/Entry"
+            },
+            "type": "array",
+            "title": "Entries"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/Rule"
+            },
+            "type": "array",
+            "title": "Rules"
+          },
+          "categories": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "frontend",
+                "backend",
+                "database",
+                "cache_queue",
+                "auth",
+                "hosting",
+                "ci_cd",
+                "observability",
+                "integrations",
+                "ai_layer"
+              ]
+            },
+            "type": "array",
+            "title": "Categories"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "catalogue_version",
+          "rules_version",
+          "entries",
+          "rules"
+        ],
+        "title": "Catalogue"
+      },
       "DiscoveryAnswers": {
         "properties": {
           "problem_statement": {
@@ -2279,6 +2871,153 @@
         ],
         "title": "DiscoveryWrite"
       },
+      "Entry": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "frontend",
+              "backend",
+              "database",
+              "cache_queue",
+              "auth",
+              "hosting",
+              "ci_cd",
+              "observability",
+              "integrations",
+              "ai_layer"
+            ],
+            "title": "Category"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "strengths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Strengths"
+          },
+          "constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Constraints"
+          },
+          "project_fit": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Project Fit"
+          },
+          "operational_complexity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Operational Complexity"
+          },
+          "operational_burden": {
+            "type": "string",
+            "title": "Operational Burden"
+          },
+          "cost_category": {
+            "type": "string",
+            "enum": [
+              "free-tier",
+              "self-hosted",
+              "usage-based",
+              "paid",
+              "open-source-self-hosted-or-managed"
+            ],
+            "title": "Cost Category"
+          },
+          "cost_note": {
+            "type": "string",
+            "title": "Cost Note"
+          },
+          "trade_offs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Trade Offs"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "change_conditions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Change Conditions"
+          },
+          "selection_rules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selection Rules"
+          },
+          "optional": {
+            "type": "boolean",
+            "title": "Optional"
+          },
+          "last_reviewed": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "title": "Last Reviewed"
+          },
+          "links": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Links"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "summary",
+          "strengths",
+          "constraints",
+          "project_fit",
+          "operational_complexity",
+          "operational_burden",
+          "cost_category",
+          "cost_note",
+          "trade_offs",
+          "assumptions",
+          "change_conditions",
+          "selection_rules",
+          "optional",
+          "last_reviewed"
+        ],
+        "title": "Entry"
+      },
       "ErrorDetail": {
         "properties": {
           "code": {
@@ -2328,6 +3067,25 @@
         ],
         "title": "ErrorResponse"
       },
+      "Evidence": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "excerpt": {
+            "type": "string",
+            "title": "Excerpt"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "field",
+          "excerpt"
+        ],
+        "title": "Evidence"
+      },
       "FieldError": {
         "properties": {
           "field": {
@@ -2345,6 +3103,240 @@
           "message"
         ],
         "title": "FieldError"
+      },
+      "InputRead": {
+        "properties": {
+          "overrides": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Overrides"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/Signal"
+            },
+            "type": "array",
+            "title": "Signals"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "overrides",
+          "signals"
+        ],
+        "title": "InputRead"
+      },
+      "InputWrite": {
+        "properties": {
+          "overrides": {
+            "$ref": "#/components/schemas/Overrides"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "overrides"
+        ],
+        "title": "InputWrite"
+      },
+      "Match": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id"
+          },
+          "weight": {
+            "type": "integer",
+            "title": "Weight"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/Signal"
+            },
+            "type": "array",
+            "title": "Signals"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rule_id",
+          "weight",
+          "reason",
+          "signals"
+        ],
+        "title": "Match"
+      },
+      "Overrides": {
+        "properties": {
+          "budget": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "zero",
+                  "low",
+                  "flexible"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget"
+          },
+          "scale": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "small",
+                  "medium",
+                  "large"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scale"
+          },
+          "data_shape": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "relational",
+                  "document",
+                  "mixed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Shape"
+          },
+          "background_jobs": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "yes",
+                  "no"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Background Jobs"
+          },
+          "realtime": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "yes",
+                  "no"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Realtime"
+          },
+          "auth_needs": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "basic",
+                  "enterprise_sso"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auth Needs"
+          },
+          "ops_capability": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ops Capability"
+          },
+          "integrations": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "payments",
+                    "email",
+                    "sms",
+                    "calendar",
+                    "maps",
+                    "generic_api"
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Integrations"
+          },
+          "ai_layer": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "not_needed",
+                  "required"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Layer"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Overrides"
       },
       "ProjectCreate": {
         "properties": {
@@ -2574,6 +3566,131 @@
         "additionalProperties": false,
         "type": "object",
         "title": "ProjectUpdate"
+      },
+      "Recommendation": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "frontend",
+              "backend",
+              "database",
+              "cache_queue",
+              "auth",
+              "hosting",
+              "ci_cd",
+              "observability",
+              "integrations",
+              "ai_layer"
+            ],
+            "title": "Category"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "recommended",
+              "not_recommended"
+            ],
+            "title": "Status"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "recommendation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScoredEntry"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/ScoredEntry"
+            },
+            "type": "array",
+            "title": "Alternatives"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/ScoredEntry"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "trade_offs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Trade Offs"
+          },
+          "operational_complexity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operational Complexity"
+          },
+          "operational_burden": {
+            "type": "string",
+            "title": "Operational Burden"
+          },
+          "cost_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Category"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "change_conditions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Change Conditions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category",
+          "status",
+          "explanation",
+          "recommendation",
+          "alternatives",
+          "candidates",
+          "reason",
+          "trade_offs",
+          "operational_complexity",
+          "operational_burden",
+          "cost_category",
+          "assumptions",
+          "change_conditions"
+        ],
+        "title": "Recommendation"
       },
       "RequirementCounts": {
         "properties": {
@@ -2854,6 +3971,343 @@
         "additionalProperties": false,
         "type": "object",
         "title": "RequirementUpdate"
+      },
+      "Result": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "catalogue_version": {
+            "type": "string",
+            "title": "Catalogue Version"
+          },
+          "rules_version": {
+            "type": "string",
+            "title": "Rules Version"
+          },
+          "input_fingerprint": {
+            "type": "string",
+            "title": "Input Fingerprint"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/Signal"
+            },
+            "type": "array",
+            "title": "Signals"
+          },
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/Recommendation"
+            },
+            "type": "array",
+            "title": "Recommendations"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "catalogue_version",
+          "rules_version",
+          "input_fingerprint",
+          "signals",
+          "recommendations",
+          "notes",
+          "disclaimer"
+        ],
+        "title": "Result"
+      },
+      "Rule": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "when": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "When"
+          },
+          "weight": {
+            "type": "integer",
+            "title": "Weight"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "description",
+          "when",
+          "weight",
+          "reason"
+        ],
+        "title": "Rule"
+      },
+      "ScoredEntry": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "frontend",
+              "backend",
+              "database",
+              "cache_queue",
+              "auth",
+              "hosting",
+              "ci_cd",
+              "observability",
+              "integrations",
+              "ai_layer"
+            ],
+            "title": "Category"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "strengths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Strengths"
+          },
+          "constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Constraints"
+          },
+          "project_fit": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Project Fit"
+          },
+          "operational_complexity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Operational Complexity"
+          },
+          "operational_burden": {
+            "type": "string",
+            "title": "Operational Burden"
+          },
+          "cost_category": {
+            "type": "string",
+            "enum": [
+              "free-tier",
+              "self-hosted",
+              "usage-based",
+              "paid",
+              "open-source-self-hosted-or-managed"
+            ],
+            "title": "Cost Category"
+          },
+          "cost_note": {
+            "type": "string",
+            "title": "Cost Note"
+          },
+          "trade_offs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Trade Offs"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "change_conditions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Change Conditions"
+          },
+          "selection_rules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selection Rules"
+          },
+          "optional": {
+            "type": "boolean",
+            "title": "Optional"
+          },
+          "last_reviewed": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "title": "Last Reviewed"
+          },
+          "links": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Links"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score"
+          },
+          "matched_rules": {
+            "items": {
+              "$ref": "#/components/schemas/Match"
+            },
+            "type": "array",
+            "title": "Matched Rules"
+          },
+          "positive_matches": {
+            "items": {
+              "$ref": "#/components/schemas/Match"
+            },
+            "type": "array",
+            "title": "Positive Matches"
+          },
+          "negative_matches": {
+            "items": {
+              "$ref": "#/components/schemas/Match"
+            },
+            "type": "array",
+            "title": "Negative Matches"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "summary",
+          "strengths",
+          "constraints",
+          "project_fit",
+          "operational_complexity",
+          "operational_burden",
+          "cost_category",
+          "cost_note",
+          "trade_offs",
+          "assumptions",
+          "change_conditions",
+          "selection_rules",
+          "optional",
+          "last_reviewed",
+          "score",
+          "matched_rules",
+          "positive_matches",
+          "negative_matches",
+          "reason"
+        ],
+        "title": "ScoredEntry"
+      },
+      "Signal": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Value"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "detected",
+              "default"
+            ],
+            "title": "Source"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "value",
+          "source"
+        ],
+        "title": "Signal"
       }
     }
   }

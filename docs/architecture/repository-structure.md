@@ -16,7 +16,6 @@ buildwise/
 │   ├── Dockerfile
 │   └── tests/{unit,integration}/  # pytest; integration uses a Postgres service container
 ├── packages/shared-types/         # generated OpenAPI schema + TS types (committed, checked for drift in CI)
-├── data/technology-catalogue/     # versioned JSON entries + schema.json + CATALOGUE_VERSION
 ├── docs/{product,specs,architecture,adr,development,testing,observability,hosting,runbooks,plan}/
 ├── infra/
 │   ├── docker/                    # local compose overrides
@@ -29,3 +28,11 @@ buildwise/
 ```
 
 Tooling choices: `uv` (Python deps/lock), `ruff` (lint+format), `mypy` (types), `pytest`; `pnpm`, `eslint`, `prettier`, `tsc`, `vitest`, `playwright` for the web app.
+
+Phase 3 backend catalogue lives at
+`services/api/app/modules/recommendations/catalogue/{catalogue.json,catalogue.schema.json}`
+rather than root `data/`: it must ship inside the existing `services/api` Docker
+build context. The JSON contains both catalogue and rules versions. The public
+`GET /api/v1/catalogue` endpoint exposes the same validated data used by the engine.
+`recommendation_inputs` stores project overrides; generated recommendations are
+computed on read, not persisted. Planned folders/workflows above are not all implemented.
