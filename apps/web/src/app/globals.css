@@ -1387,13 +1387,19 @@ h1 {
 .operation-form input, .operation-form select, .operation-form textarea { width: 100%; min-width: 0; border: 1px solid #a8b8c6; border-radius: 6px; padding: 9px; background: white; color: #172b3c; font: inherit; }
 .operation-form fieldset { display: grid; gap: 12px; }
 .operation-form legend { padding: 0 5px; font-weight: 650; }
-.operations-table-wrap { overflow-x: auto; border: 1px solid #dce4e9; border-radius: 8px; background: white; }
+.operations-table-wrap { max-width: 100%; overflow-x: auto; border: 1px solid #dce4e9; border-radius: 8px; background: white; }
 .operations-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .operations-table th, .operations-table td { padding: 14px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid #e2e8ee; }
 .operations-table thead { background: #f3f7f9; color: #475569; font-size: 12px; }
+.operations-table thead th { white-space: nowrap; }
 .operations-table th[scope="row"] { min-width: 200px; max-width: 300px; }
+.operations-table td:nth-child(n+2):nth-child(-n+6) { white-space: nowrap; }
+.operations-table td:nth-child(n+3):nth-child(-n+5) { min-width: 64px; }
+.operations-table td:nth-child(7) { min-width: 120px; overflow-wrap: normal; }
+.operations-table td:nth-child(8) { min-width: 260px; }
+.operations-table td:last-child summary { white-space: nowrap; }
 .operations-table td:last-child details[open] { min-width: 280px; }
-.risk-score { display: inline-block; border-radius: 4px; padding: 3px 8px; background: #fff1d5; color: #755011; }
+.risk-score { display: inline-block; white-space: nowrap; border-radius: 4px; padding: 3px 8px; background: #fff1d5; color: #755011; }
 .operations-slos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .slo-target { font-size: 24px; font-weight: 650; color: #17624e; margin: 18px 0; }
 .slo-target span { font-size: 13px; font-weight: 400; color: #526174; }

@@ -129,7 +129,29 @@ See the [observability runbook](docs/operations/observability.md) for Grafana Cl
 Free quotas, env-only provisioning, privacy, traffic generation and fault/recovery
 demonstrations. Use sampler 0.1 outside short demos. No browser telemetry is added.
 
-### Keep-warm ping
+### Production deploys
+
+Merges to `main` deploy after CI passes. The
+[Deploy production](.github/workflows/deploy-production.yml) workflow builds the
+tested commit's static export, triggers that same commit on the existing Render
+Free API service, and publishes the export to the existing Cloudflare Pages
+Direct Upload project `buildwise`, whose production branch is `main`. The site
+can go live while the API is still building, so keep API changes backward compatible.
+
+Set these GitHub Actions secrets:
+
+- `RENDER_DEPLOY_HOOK_URL`: the API service's Deploy Hook from Render Settings.
+  Keep native auto-deploy off; this service uses a public Git URL.
+- `CLOUDFLARE_API_TOKEN`: an account-scoped token with **Cloudflare Pages: Edit**.
+- `CLOUDFLARE_ACCOUNT_ID`: the account hosting the Pages project.
+
+The frontend build uses the `API_BASE_URL` repository variable if set, or the
+production Render URL otherwise. Check the workflow run and the Render Deploys
+page for the merged commit; then verify the
+[production site](https://buildwise-1fy.pages.dev/) and the
+[API readiness endpoint](https://buildwise-api-p4yq.onrender.com/ready) return 200.
+
+### Optional keep-warm ping
 
 [Keep API warm](.github/workflows/keep-warm.yml) requests `/health` every ten
 minutes once merged into the default branch, or through `workflow_dispatch`.

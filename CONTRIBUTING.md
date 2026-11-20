@@ -80,4 +80,5 @@ evidence where practical. Never claim deployment success without verifying the
 deployed result. CI uses standard `ubuntu-latest` runners with bounded job times
 and cancels superseded runs; public-repo standard runners avoid paid compute.
 Private-repo usage must still be monitored against the account's free allowance.
-Deployment automation is intentionally deferred.
+See [production deploys](README.md#operations-production-deploys) for what runs
+after a merge to `main`.
