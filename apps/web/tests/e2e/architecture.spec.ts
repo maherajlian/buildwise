@@ -12,7 +12,7 @@ test("sample architecture explains choices and remains read-only at desktop and 
   await expect(
     page.getByRole("heading", { name: "Technology recommendations" }),
   ).toBeVisible();
-  await expect(page.getByText("Catalogue 2026.11.1")).toBeVisible();
+  await expect(page.getByText("Catalogue 2026.11.2")).toBeVisible();
   const database = page.getByRole("region", {
     name: "Database recommendation",
   });

@@ -9,7 +9,7 @@ describe("technology catalogue", () => {
   it("reads the catalogue and renders categories, review dates and trade-offs", async () => {
     vi.spyOn(api, "catalogue").mockResolvedValue(catalogue);
     render(<TechnologyCatalogue />);
-    expect(await screen.findByText("Catalogue 2026.11.1")).toBeInTheDocument();
+    expect(await screen.findByText("Catalogue 2026.11.2")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "PostgreSQL" }),
     ).toBeInTheDocument();

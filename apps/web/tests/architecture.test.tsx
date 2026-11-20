@@ -16,7 +16,7 @@ describe("Architecture", () => {
   it("explains positive/negative rules, sources, evidence, alternatives and optional AI", async () => {
     const user = userEvent.setup();
     render(<Architecture projectId="p1" readOnly />);
-    expect(await screen.findByText("Catalogue 2026.11.1")).toBeInTheDocument();
+    expect(await screen.findByText("Catalogue 2026.11.2")).toBeInTheDocument();
     expect(screen.getByText("a".repeat(64))).toBeInTheDocument();
     expect(screen.getByText(recommendations.disclaimer)).toBeInTheDocument();
     expect(screen.getByText(recommendations.notes[0])).toBeInTheDocument();

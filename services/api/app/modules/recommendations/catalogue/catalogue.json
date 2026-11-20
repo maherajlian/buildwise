@@ -1,5 +1,5 @@
 {
-  "catalogue_version": "2026.11.1",
+  "catalogue_version": "2026.11.2",
   "rules_version": "1",
   "entries": [
     {
@@ -923,6 +923,7 @@
       "selection_rules": [
         "email",
         "sms",
+        "calendar",
         "small"
       ],
       "optional": false,
@@ -971,7 +972,7 @@
       "id": "generic-webhooks",
       "name": "Generic HTTP/webhook adapters",
       "category": "integrations",
-      "summary": "Explicit adapters for third-party HTTP APIs.",
+      "summary": "Explicit adapters for third-party HTTP APIs, including maps and geocoding.",
       "strengths": [
         "Keeps provider boundaries visible and testable"
       ],
@@ -995,6 +996,8 @@
         "New integrations need capabilities beyond messaging or payments."
       ],
       "selection_rules": [
+        "maps",
+        "generic_api",
         "distributed"
       ],
       "optional": false,
@@ -1286,6 +1289,33 @@
       },
       "weight": 25,
       "reason": "Payments require a payment-provider adapter."
+    },
+    {
+      "id": "calendar",
+      "description": "Calendar integration favors a calendar export adapter.",
+      "when": {
+        "integrations": "calendar"
+      },
+      "weight": 25,
+      "reason": "Calendar integration favors a calendar export adapter."
+    },
+    {
+      "id": "maps",
+      "description": "Maps and geocoding need a dedicated HTTP provider adapter.",
+      "when": {
+        "integrations": "maps"
+      },
+      "weight": 40,
+      "reason": "Maps and geocoding need a dedicated HTTP provider adapter."
+    },
+    {
+      "id": "generic_api",
+      "description": "External APIs need explicit HTTP and webhook boundaries.",
+      "when": {
+        "integrations": "generic_api"
+      },
+      "weight": 40,
+      "reason": "External APIs need explicit HTTP and webhook boundaries."
     },
     {
       "id": "ai",

@@ -96,6 +96,31 @@ def test_jobs_and_data_rules() -> None:
     assert enterprise.recommendation and enterprise.recommendation.id == "auth0"
 
 
+@pytest.mark.parametrize(
+    ("kind", "expected"),
+    [
+        ("calendar", "email-sms-calendar"),
+        ("maps", "generic-webhooks"),
+        ("generic_api", "generic-webhooks"),
+    ],
+)
+def test_integration_kinds_affect_ranking(kind: str, expected: str) -> None:
+    category = next(
+        r
+        for r in result(integrations=[kind]).recommendations
+        if r.category == "integrations"
+    )
+    assert category.recommendation and category.recommendation.id == expected
+    match = next(
+        m for m in category.recommendation.positive_matches if m.rule_id == kind
+    )
+    assert match.signals[0].value == [kind]
+    baseline = next(r for r in result().recommendations if r.category == "integrations")
+    baseline_entries = [baseline.recommendation, *baseline.alternatives]
+    baseline_entry = next(e for e in baseline_entries if e and e.id == expected)
+    assert baseline_entry and category.recommendation.score > baseline_entry.score
+
+
 def test_sample_detection_and_evidence() -> None:
     requirements = [
         {"title": t, "description": d, "acceptance_criteria": c}
@@ -187,7 +212,7 @@ def test_reproducible_no_network(monkeypatch: pytest.MonkeyPatch) -> None:
         == recommend(list(reversed(signals)), catalogue).model_dump_json()
     )
     assert len(first.input_fingerprint) == 64
-    catalogue.catalogue_version = "2026.11.2"
+    catalogue.catalogue_version = "test-next-version"
     changed = recommend(signals, catalogue)
     assert changed.catalogue_version != first.catalogue_version
     assert changed.input_fingerprint == first.input_fingerprint

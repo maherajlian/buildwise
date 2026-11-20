@@ -70,7 +70,7 @@ const selected: ScoredEntry = {
 };
 export const recommendations: RecommendationResult = {
   project_id: "p1",
-  catalogue_version: "2026.11.1",
+  catalogue_version: "2026.11.2",
   rules_version: "1",
   input_fingerprint: "a".repeat(64),
   signals: inputs.signals,
