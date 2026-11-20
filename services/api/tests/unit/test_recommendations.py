@@ -186,6 +186,27 @@ def test_detection_excludes_out_of_scope_and_deferred(status: str) -> None:
     )
 
 
+@pytest.mark.parametrize(
+    ("phrase", "expected"),
+    [
+        ("flexible budget", "flexible"),
+        ("unlimited budget", "flexible"),
+        ("zero budget", "zero"),
+        ("no budget", "zero"),
+        ("free only", "zero"),
+    ],
+)
+def test_explicit_budget_phrases_win_over_mvp(phrase: str, expected: str) -> None:
+    signals, _ = derive_signals(
+        {"goals": ["Ship an MVP with a small team"], "constraints": [phrase]},
+        [],
+        Overrides(),
+    )
+    budget = next(s for s in signals if s.id == "budget")
+    assert (budget.value, budget.source) == (expected, "detected")
+    assert any(phrase in e.excerpt for e in budget.evidence)
+
+
 def test_long_evidence_keeps_matched_phrase() -> None:
     signals, _ = derive_signals(
         {"constraints": ["Context " * 80 + "low budget"]}, [], Overrides()

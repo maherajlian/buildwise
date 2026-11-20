@@ -18,8 +18,8 @@ DEFAULTS: dict[str, str | list[str]] = {
 PATTERNS: dict[str, dict[str, str]] = {
     "budget": {
         "zero": r"zero budget|no budget|free only",
-        "low": r"small team|low budget|MVP",
         "flexible": r"flexible budget|unlimited budget",
+        "low": r"small team|low budget|MVP",
     },
     "scale": {
         "large": r"millions of users|global scale|large scale",
