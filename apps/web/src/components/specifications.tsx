@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { api, type Artefact, type ApiError } from "@/lib/api";
 import { getProjectToken, readProjectToken } from "@/lib/token";
 import { downloadMarkdown } from "@/lib/download";
@@ -30,6 +31,8 @@ export function Specifications({
   projectId: string;
   readOnly: boolean;
 }) {
+  const params = useSearchParams();
+  const requestedKind = params.get("artefact");
   const [items, setItems] = useState<Artefact[]>();
   const [selected, setSelected] = useState<string>();
   const [error, setError] = useState<ApiError>();
@@ -44,7 +47,10 @@ export function Specifications({
       .then((value) => {
         if (!disposed) {
           setItems(value);
-          setSelected(value[0]?.id);
+          setSelected(
+            value.find((item) => item.kind === requestedKind)?.id ||
+              value[0]?.id,
+          );
           setError(undefined);
         }
       })
@@ -54,7 +60,7 @@ export function Specifications({
     return () => {
       disposed = true;
     };
-  }, [projectId, readOnly, attempt]);
+  }, [projectId, readOnly, attempt, requestedKind]);
   const current = items?.find((a) => a.id === selected);
   async function action(work: () => Promise<void>) {
     setBusy(true);

@@ -154,6 +154,30 @@ it("shows readable sample Specs and Plan without writes or tokens", async () => 
   ).not.toBeInTheDocument();
 });
 
+it("opens the requested deployment or observability artefact from a deep link", async () => {
+  navigation.params = new URLSearchParams("artefact=observability");
+  vi.mocked(api.artefacts).mockResolvedValue([
+    artefact,
+    {
+      ...artefact,
+      id: "obs1",
+      kind: "observability",
+      title: "Observability plan",
+    },
+  ]);
+  render(<Specifications projectId="p1" readOnly />);
+  const selected = await screen.findByRole("region", {
+    name: "Selected artefact",
+  });
+  expect(
+    within(selected).getByRole("heading", {
+      name: "Observability plan",
+      level: 3,
+    }),
+  ).toBeVisible();
+  navigation.params = new URLSearchParams();
+});
+
 it("edits task planning fields and saves; status validation errors stay inline; exports", async () => {
   const user = userEvent.setup();
   const update = vi.spyOn(api, "updateTask").mockResolvedValue(plan.tasks[0]);

@@ -1,7 +1,11 @@
 export function downloadMarkdown(text: string, filename: string) {
-  const url = URL.createObjectURL(
-    new Blob([text], { type: "text/markdown;charset=utf-8" }),
-  );
+  downloadText(text, filename, "text/markdown;charset=utf-8");
+}
+export function downloadCsv(text: string, filename: string) {
+  downloadText(text, filename, "text/csv;charset=utf-8");
+}
+function downloadText(text: string, filename: string, type: string) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = filename;

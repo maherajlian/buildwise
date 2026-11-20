@@ -6,7 +6,7 @@ const pages = [
   ["/projects/", "Projects", "Projects"],
   ["/catalogue/", "Technology catalogue", "Technology catalogue"],
   ["/guides/", "Engineering guides", "Engineering guides"],
-  ["/observability/", "Observability demo", "Observability demo"],
+  ["/observability/", "Observability demo", "Observability"],
   ["/docs/", "Documentation", "Documentation"],
 ];
 
