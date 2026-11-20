@@ -2,8 +2,12 @@ from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from app.modules.discovery.schemas import DiscoveryAnswers
+from app.modules.operations.service import generate as generate_operations
+from app.modules.planning.service import generate as generate_plan
 from app.modules.projects.access import SAMPLE_PROJECT_ID
 from app.modules.projects.models import Discovery, Project, Requirement
+from app.modules.recommendations.catalogue_loader import load_catalogue
+from app.modules.specifications.generator import generate as generate_artefacts
 
 NAME = "Restaurant Booking & Customer Engagement SaaS (illustrative sample)"
 DESCRIPTION = (
@@ -132,5 +136,10 @@ def seed_sample(session: Session) -> Project:
                 acceptance_criteria=criteria,
             )
         )
+    session.flush()
+    catalogue = load_catalogue()
+    generate_artefacts(session, project, catalogue, overwrite_edited=True)
+    generate_plan(session, project, catalogue, overwrite=True)
+    generate_operations(session, project, catalogue, replace_edited=True)
     session.commit()
     return project

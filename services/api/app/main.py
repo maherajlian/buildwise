@@ -15,8 +15,13 @@ from app.core.errors import ErrorResponse
 from app.core.middleware import CorrelationID, JsonCORS, RequestSafety
 from app.core.settings import Settings, database_url
 from app.modules.discovery.router import router as discovery_router
+from app.modules.operations.router import router as operations_router
+from app.modules.planning.router import router as planning_router
 from app.modules.projects.router import router
+from app.modules.recommendations.catalogue_loader import load_catalogue
+from app.modules.recommendations.router import router as recommendations_router
 from app.modules.requirements.router import router as requirements_router
+from app.modules.specifications.router import router as specifications_router
 from app.telemetry.setup import configure_telemetry
 
 
@@ -33,6 +38,7 @@ def field_error(error: Mapping[str, Any]) -> dict[str, str]:
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
+    catalogue = load_catalogue()
     settings = settings or Settings()
     engine = create_engine(
         database_url(settings.database_url),
@@ -59,6 +65,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         },
     )
     app.state.engine = engine
+    app.state.telemetry = telemetry
+    app.state.catalogue = catalogue
 
     @app.exception_handler(StarletteHTTPException)
     async def http_error(request: Request, exc: StarletteHTTPException) -> JSONResponse:
@@ -116,6 +124,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(router)
     app.include_router(discovery_router)
     app.include_router(requirements_router)
+    app.include_router(recommendations_router)
+    app.include_router(specifications_router)
+    app.include_router(planning_router)
+    app.include_router(operations_router)
     app.add_middleware(RequestSafety)
     app.add_middleware(
         JsonCORS,

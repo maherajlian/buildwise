@@ -7,7 +7,7 @@
 BuildWise's MVP is CRUD plus deterministic generation (rules, templates, export). There is no real asynchronous workload, traffic is demo-scale, and every extra deployable costs free-tier quota and operational effort.
 
 ## Decision
-Ship one FastAPI service containing the discovery, recommendations, specifications, planning and exports modules (`services/api/app/modules/*`), one static Next.js frontend, and one PostgreSQL database. Modules talk through in-process Python interfaces, own their own tables, and never import each other's ORM models directly. No message queue or separate worker.
+Ship one FastAPI service containing the discovery, recommendations, specifications, planning, operations and exports modules (`services/api/app/modules/*`), one static Next.js frontend, and one PostgreSQL database. Modules talk through in-process Python interfaces, own their own tables, and never import each other's ORM models directly. No message queue or separate worker.
 
 ## Consequences
 - One API deploy, one DB connection pool, simple local setup and tracing.

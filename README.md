@@ -54,6 +54,49 @@ service so the browser always uses the public localhost API URL.
 
 ## API contract
 
+### Specifications and Build planning (Phase 4 backend)
+
+Under `/api/v1/projects/{id}`, `POST /artefacts/generate` deterministically produces
+13 editable document kinds from discovery, requirements and effective recommendations.
+`GET /artefacts`, `GET/PATCH/DELETE /artefacts/{aid}`, and `POST /artefacts` (new ADR)
+manage structured sections. Edited documents survive regeneration unless
+`overwrite_edited=true`. `GET /artefacts/{aid}/markdown` and
+`GET /artefacts/export/markdown` export readable Markdown with project context.
+
+`POST /plan/generate` creates epics and tasks (`overwrite=true` replaces a plan).
+`GET /plan` includes dependency validation; `POST /plan/tasks` and
+`POST /plan/epics`, with `PATCH/DELETE /plan/tasks/{tid}` and
+`PATCH/DELETE /plan/epics/{eid}`, support manual planning. Dependencies must exist
+in the same project, be acyclic and not refer to self; active/review/done tasks
+require all dependencies done (422 otherwise). `GET /plan/export/markdown` exports
+the complete plan. Reads require the project token except for the read-only public
+sample; writes refresh project activity. No AI inference or frontend changes.
+See [API details](services/api/README.md#phase-4-specify-and-build-planning-backend).
+
+### Deterministic recommendations (Phase 3)
+
+`GET /api/v1/catalogue` exposes the curated catalogue and rules without a token.
+`GET /api/v1/projects/{id}/recommendations` explains scores, alternatives, input
+evidence and trade-offs. Project access uses the same token/sample rules as discovery.
+Read or replace overrides at `GET|PUT /api/v1/projects/{id}/recommendation-inputs`;
+PUT takes `{"overrides":{"budget":"zero"}}`. Omit keys to return them to automatic
+detection (an empty object resets all); null and unknown values are rejected.
+The sample remains read-only. No model or external API is called during generation.
+AI candidates are never recommended without explicit `ai_layer: "required"`;
+they remain optional and may incur cost. Scores are a decision aid, not benchmarks.
+
+Catalogue content and JSON Schema are in
+`services/api/app/modules/recommendations/catalogue/` so Docker includes them.
+Review provider terms and pricing before use; every pricing/free-tier claim requires
+verification. Bump `catalogue_version` for content/rule changes and `rules_version`
+for detection/scoring changes, update review dates, and run API tests.
+
+Open a project's **Architecture** tab to inspect inputs, evidence, positive/negative
+rules and expandable alternatives. Owned projects can save overrides or return
+individual inputs to Auto; the sample remains read-only. The public **Technology
+catalogue** page groups the same engine data by category, including costs, review
+dates and operational trade-offs. Neither screen calls a model or paid AI service.
+
 ```sh
 # After changing FastAPI routes/schemas:
 cd services/api
