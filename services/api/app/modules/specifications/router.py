@@ -8,6 +8,7 @@ from app.modules.projects.access import OptionalOwnerToken, OwnerToken, get_proj
 from app.modules.specifications import generator
 from app.modules.specifications.models import Artefact
 from app.modules.specifications.schemas import CreateADR, Edit, Generate, Read
+from app.telemetry.operations import observed
 
 router = APIRouter(
     prefix="/api/v1/projects/{project_id}/artefacts", tags=["specifications"]
@@ -22,20 +23,28 @@ def owned(session: Session, project_id: UUID, aid: UUID) -> Artefact:
 
 
 @router.post("/generate", response_model=list[Read])
+@observed("artifacts")
 def generate(
     project_id: UUID, body: Generate, request: Request, x_project_token: OwnerToken
 ) -> list[Artefact]:
     with Session(request.app.state.engine, expire_on_commit=False) as session:
         project = get_project(session, project_id, x_project_token, write=True)
+        generated: list[Artefact] = []
         items = generator.generate(
             session,
             project,
             request.app.state.catalogue,
             body.kinds,
             body.overwrite_edited,
+            generated=generated,
         )
         project.updated_at = func.now()
         session.commit()
+        counter = request.app.state.telemetry.metrics.get_meter(
+            "buildwise"
+        ).create_counter("buildwise_artifact_generation_total")
+        for item in generated:
+            counter.add(1, {"buildwise.artifact.type": item.kind})
         for item in items:
             session.refresh(item)
         return items
@@ -51,6 +60,7 @@ def list_artefacts(
 
 
 @router.get("/export/markdown", response_class=Response)
+@observed("exports")
 def export(
     project_id: UUID, request: Request, x_project_token: OptionalOwnerToken = None
 ) -> Response:
@@ -96,6 +106,7 @@ def read(
 
 
 @router.get("/{aid}/markdown", response_class=Response)
+@observed("exports")
 def markdown(
     project_id: UUID,
     aid: UUID,

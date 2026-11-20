@@ -9,7 +9,7 @@ from app.telemetry.setup import Telemetry
 
 @contextmanager
 def generation(telemetry: Telemetry) -> Iterator[None]:
-    tracer = telemetry.traces.get_tracer("buildwise.operations")
+    tracer = telemetry.traces.get_tracer("buildwise")
     meter = telemetry.metrics.get_meter("buildwise.operations")
     counter = meter.create_counter("operations_generation_total")
     duration = meter.create_histogram(
@@ -18,16 +18,26 @@ def generation(telemetry: Telemetry) -> Iterator[None]:
     started = perf_counter()
     outcome = "success"
     with tracer.start_as_current_span(
-        "operations.generate", record_exception=False, set_status_on_exception=False
+        "operations.generate",
+        attributes={"buildwise.operation": "operations.generate"},
+        record_exception=False,
+        set_status_on_exception=False,
     ) as span:
         try:
             yield
-        except Exception:
+        except Exception as exc:
             outcome = "error"
             span.set_status(StatusCode.ERROR)
+            span.set_attribute("error.type", type(exc).__name__)
+            meter.create_counter("buildwise_operation_errors_total").add(
+                1,
+                {
+                    "buildwise.operation": "operations.generate",
+                    "error.type": type(exc).__name__,
+                },
+            )
             raise
         finally:
             attributes = {"outcome": outcome}
-            span.set_attribute("outcome", outcome)
             counter.add(1, attributes)
             duration.record(perf_counter() - started, attributes)

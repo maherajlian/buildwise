@@ -5,8 +5,6 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -22,6 +20,8 @@ from app.modules.recommendations.catalogue_loader import load_catalogue
 from app.modules.recommendations.router import router as recommendations_router
 from app.modules.requirements.router import router as requirements_router
 from app.modules.specifications.router import router as specifications_router
+from app.telemetry.database import instrument_database
+from app.telemetry.http import RequestTelemetry
 from app.telemetry.setup import configure_telemetry
 
 
@@ -65,6 +65,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         },
     )
     app.state.engine = engine
+    app.state.settings = settings
     app.state.telemetry = telemetry
     app.state.catalogue = catalogue
 
@@ -133,14 +134,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         JsonCORS,
         allow_origins=settings.cors_origins,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-        allow_headers=["Content-Type", "X-Correlation-ID", "X-Project-Token"],
+        allow_headers=[
+            "Content-Type",
+            "X-Correlation-ID",
+            "X-Project-Token",
+            "traceparent",
+            "tracestate",
+        ],
         expose_headers=["X-Correlation-ID"],
     )
     app.add_middleware(CorrelationID)
-    FastAPIInstrumentor.instrument_app(
-        app,
-        tracer_provider=telemetry.traces,
-        meter_provider=telemetry.metrics,
-    )
-    SQLAlchemyInstrumentor().instrument(engine=engine, tracer_provider=telemetry.traces)
+    app.add_middleware(RequestTelemetry, telemetry=telemetry)
+    instrument_database(engine, telemetry)
     return app

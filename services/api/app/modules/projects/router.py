@@ -18,6 +18,7 @@ from app.modules.projects.access import (
     purge_expired,
 )
 from app.modules.projects.models import Discovery, Project, Requirement
+from app.telemetry.operations import observed
 
 router = APIRouter(prefix="/api/v1/projects", tags=["projects"])
 logger = logging.getLogger("buildwise")
@@ -89,6 +90,7 @@ class ProjectOverview(BaseModel):
 
 
 @router.post("", response_model=ProjectRead, status_code=201)
+@observed("projects.create")
 def create_project(
     body: ProjectCreate, request: Request, x_project_token: OwnerToken
 ) -> Project:
@@ -143,6 +145,7 @@ def read_project(
 
 
 @router.patch("/{project_id}", response_model=ProjectRead)
+@observed("projects.update")
 def update_project(
     project_id: UUID,
     body: ProjectUpdate,

@@ -2,8 +2,9 @@
 
 A zero-paid-AI engineering workbench, from idea to observable deployment.
 Phase 1 includes the API/database foundation and a statically exported Next.js workspace.
-Projects are live; catalogue, guides, documentation and full observability are clearly
-labelled placeholders. No runtime model or paid inference service is used.
+Projects are live; unfinished frontend sections are clearly labelled placeholders.
+Backend observability is available through the optional local
+LGTM profile. No runtime model or paid inference service is used.
 
 ## Local setup
 
@@ -113,7 +114,22 @@ See [architecture](docs/architecture/system-design.md),
 [hosting assessment](docs/hosting/free-tier-assessment.md), and
 [implementation plan](docs/plan/implementation-proposal.md).
 
-## Operations: production deploys
+## Operations
+
+### Backend observability
+
+```sh
+OTEL_EXPORTER_OTLP_ENDPOINT=http://lgtm:4318 OTEL_TRACES_SAMPLER_ARG=1 \
+  docker compose --profile observability up -d --build
+```
+
+Grafana runs at <http://localhost:3001> with four provisioned BuildWise dashboards
+and five alert rules; OTLP HTTP is at localhost:4318. Both ports are loopback-only.
+See the [observability runbook](docs/operations/observability.md) for Grafana Cloud
+Free quotas, env-only provisioning, privacy, traffic generation and fault/recovery
+demonstrations. Use sampler 0.1 outside short demos. No browser telemetry is added.
+
+### Production deploys
 
 Merges to `main` deploy after CI passes. The
 [Deploy production](.github/workflows/deploy-production.yml) workflow builds the
@@ -135,7 +151,7 @@ page for the merged commit; then verify the
 [production site](https://buildwise-1fy.pages.dev/) and the
 [API readiness endpoint](https://buildwise-api-p4yq.onrender.com/ready) return 200.
 
-## Operations: optional keep-warm ping
+### Optional keep-warm ping
 
 [Keep API warm](.github/workflows/keep-warm.yml) requests `/health` every ten
 minutes once merged into the default branch, or through `workflow_dispatch`.

@@ -236,6 +236,7 @@ def generate(
     catalogue: Catalogue,
     kinds: list[Kind] | None = None,
     overwrite_edited: bool = False,
+    generated: list[Artefact] | None = None,
 ) -> list[Artefact]:
     context = snapshot(session, project, catalogue)
     existing = list(
@@ -258,6 +259,8 @@ def generate(
             item.sections = template(kind, context)
             item.context = context
             item.edited = False
+            if generated is not None:
+                generated.append(item)
     session.flush()
     return ordered(session, project.id)
 

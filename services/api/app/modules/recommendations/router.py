@@ -17,6 +17,7 @@ from app.modules.recommendations.schemas import (
     Signal,
 )
 from app.modules.recommendations.signals import derive_signals
+from app.telemetry.operations import observed
 
 router = APIRouter(tags=["recommendations"])
 PREFIX = "/api/v1/projects/{project_id}"
@@ -54,6 +55,7 @@ def read_catalogue(request: Request) -> Catalogue:
 
 
 @router.get(PREFIX + "/recommendations", response_model=Result)
+@observed("recommendations")
 def read_recommendations(
     project_id: UUID,
     request: Request,

@@ -19,6 +19,7 @@ from app.modules.planning.schemas import (
 )
 from app.modules.projects.access import OptionalOwnerToken, OwnerToken, get_project
 from app.modules.projects.models import Project, Requirement
+from app.telemetry.operations import observed
 
 router = APIRouter(prefix="/api/v1/projects/{project_id}/plan", tags=["planning"])
 
@@ -65,6 +66,7 @@ def read(
 
 
 @router.get("/export/markdown", response_class=Response)
+@observed("exports")
 def export(
     project_id: UUID, request: Request, x_project_token: OptionalOwnerToken = None
 ) -> Response:
@@ -77,6 +79,7 @@ def export(
 
 
 @router.post("/generate", response_model=PlanRead)
+@observed("tasks")
 def generate(
     project_id: UUID, body: Generate, request: Request, x_project_token: OwnerToken
 ) -> PlanRead:
