@@ -35,10 +35,9 @@ class JsonCORS(CORSMiddleware):
         return response
 
 
-class RequestSafety:
+class CorrelationID:
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
-        self.writes: OrderedDict[str, tuple[float, int]] = OrderedDict()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
@@ -55,17 +54,36 @@ class RequestSafety:
         scope["headers"] = [
             (k, v) for k, v in scope["headers"] if k.lower() != b"x-correlation-id"
         ] + [(b"x-correlation-id", correlation.encode())]
+
+        async def wrapped_send(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                message["headers"] = [
+                    (k, v)
+                    for k, v in message.get("headers", [])
+                    if k.lower() != b"x-correlation-id"
+                ] + [(b"x-correlation-id", correlation.encode())]
+            await send(message)
+
+        await self.app(scope, receive, wrapped_send)
+
+
+class RequestSafety:
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+        self.writes: OrderedDict[str, tuple[float, int]] = OrderedDict()
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        headers = dict(scope["headers"])
+        correlation = scope["state"]["correlation_id"]
         started = False
 
         async def wrapped_send(message: Message) -> None:
             nonlocal started
             if message["type"] == "http.response.start":
                 started = True
-                message["headers"] = [
-                    (k, v)
-                    for k, v in message.get("headers", [])
-                    if k.lower() != b"x-correlation-id"
-                ] + [(b"x-correlation-id", correlation.encode())]
             await send(message)
 
         async def reject(status: int, code: str, message: str) -> None:

@@ -11,7 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.errors import ErrorResponse
-from app.core.middleware import JsonCORS, RequestSafety
+from app.core.middleware import CorrelationID, JsonCORS, RequestSafety
 from app.core.settings import Settings, database_url
 from app.modules.projects.router import router
 from app.telemetry.setup import configure_telemetry
@@ -90,6 +90,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"status": "ready"}
 
     app.include_router(router)
+    app.add_middleware(RequestSafety)
     app.add_middleware(
         JsonCORS,
         allow_origins=settings.cors_origins,
@@ -97,7 +98,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_headers=["Content-Type", "X-Correlation-ID", "X-Project-Token"],
         expose_headers=["X-Correlation-ID"],
     )
-    app.add_middleware(RequestSafety)
+    app.add_middleware(CorrelationID)
     FastAPIInstrumentor.instrument_app(
         app,
         tracer_provider=telemetry.traces,

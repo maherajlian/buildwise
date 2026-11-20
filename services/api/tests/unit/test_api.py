@@ -94,6 +94,35 @@ def test_cors(client: TestClient) -> None:
     assert_error(response)
 
 
+def test_oversized_request_cors(client: TestClient) -> None:
+    for origin in ["http://localhost:3000", "https://evil.test"]:
+        response = client.post(
+            "/api/v1/projects",
+            content=b"x" * (256 * 1024 + 1),
+            headers={"Origin": origin},
+        )
+        assert response.status_code == 413
+        assert_error(response)
+        if origin == "http://localhost:3000":
+            assert response.headers["access-control-allow-origin"] == origin
+        else:
+            assert "access-control-allow-origin" not in response.headers
+
+
+def test_preflight_correlation(client: TestClient) -> None:
+    response = client.options(
+        "/api/v1/projects",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "POST",
+            "X-Correlation-ID": "preflight-123",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+    assert response.headers["x-correlation-id"] == "preflight-123"
+
+
 def test_settings(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("APP_ENV", "production")
     monkeypatch.setenv("CORS_ORIGINS", '["https://buildwise.test"]')
@@ -112,10 +141,11 @@ def test_unhandled_error(client: TestClient) -> None:
     def crash() -> None:
         raise RuntimeError("secret-value")
 
-    response = client.get("/crash")
+    response = client.get("/crash", headers={"Origin": "http://localhost:3000"})
     assert response.status_code == 500
     assert_error(response)
     assert "secret-value" not in response.text
+    assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
 
 
 def test_otlp_unreachable() -> None:
