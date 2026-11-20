@@ -68,7 +68,17 @@ def generate(
         if not replace_edited:
             statement = statement.where(model.edited.is_(False))
         session.execute(statement)
+        preserved_keys = set(
+            session.scalars(
+                select(model.generation_key).where(
+                    model.project_id == project.id, model.generation_key.is_not(None)
+                )
+            )
+        )
         for values in data[kind]:
+            if values["generation_key"] in preserved_keys:
+                continue
+            preserved_keys.add(values["generation_key"])
             session.add(
                 model(
                     project_id=project.id,

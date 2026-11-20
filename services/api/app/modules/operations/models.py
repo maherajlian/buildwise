@@ -8,6 +8,7 @@ from sqlalchemy import (
     ForeignKey,
     String,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -24,6 +25,7 @@ class OperationFields:
         ForeignKey("requirements.id", ondelete="SET NULL")
     )
     source: Mapped[str] = mapped_column(String(20), default="user")
+    generation_key: Mapped[str | None] = mapped_column(String(64))
     edited: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     rationale: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
@@ -37,6 +39,9 @@ class OperationFields:
 class TestCase(OperationFields, Base):
     __tablename__ = "test_cases"
     __table_args__ = (
+        UniqueConstraint(
+            "project_id", "generation_key", name="uq_test_case_generation"
+        ),
         CheckConstraint("source IN ('generated', 'user')", name="test_case_source"),
         CheckConstraint(
             "category IN ('unit', 'integration', 'api_contract', 'e2e', "
@@ -74,6 +79,7 @@ class TestCase(OperationFields, Base):
 class Risk(OperationFields, Base):
     __tablename__ = "risks"
     __table_args__ = (
+        UniqueConstraint("project_id", "generation_key", name="uq_risk_generation"),
         CheckConstraint("source IN ('generated', 'user')", name="risk_source"),
         CheckConstraint(
             "category IN ('technical', 'security', 'operational', 'delivery', "
@@ -103,6 +109,7 @@ class Risk(OperationFields, Base):
 class SLO(OperationFields, Base):
     __tablename__ = "slos"
     __table_args__ = (
+        UniqueConstraint("project_id", "generation_key", name="uq_slo_generation"),
         CheckConstraint("source IN ('generated', 'user')", name="slo_source"),
         CheckConstraint(
             "status IN ('suggested', 'adopted', 'rejected')", name="slo_status"

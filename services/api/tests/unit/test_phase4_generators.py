@@ -200,7 +200,10 @@ def test_project_specific_release_and_observability_plans_share_slo_rules() -> N
     assert "Email provider" in obs["distributed_tracing"]
     assert "privacy budgets" in obs["distributed_tracing"]
     slos = generate_slos(ctx, ctx["signals"])
-    assert slos == generate_operations(ctx, ctx["signals"])["slos"]
+    assert slos == [
+        {k: v for k, v in slo.items() if k != "generation_key"}
+        for slo in generate_operations(ctx, ctx["signals"])["slos"]
+    ]
     for slo in slos:
         assert all(
             slo[key] in obs["slo_candidates"]

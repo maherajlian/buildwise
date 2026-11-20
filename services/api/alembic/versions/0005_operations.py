@@ -25,6 +25,7 @@ def common() -> list[sa.Column]:  # type: ignore[type-arg]
             sa.ForeignKey("requirements.id", ondelete="SET NULL"),
         ),
         sa.Column("source", sa.String(20), nullable=False),
+        sa.Column("generation_key", sa.String(64)),
         sa.Column("edited", sa.Boolean(), nullable=False, server_default="false"),
         sa.Column("rationale", sa.Text(), nullable=False),
         sa.Column(
@@ -46,6 +47,9 @@ def upgrade() -> None:
     op.create_table(
         "test_cases",
         *common(),
+        sa.UniqueConstraint(
+            "project_id", "generation_key", name="uq_test_case_generation"
+        ),
         sa.Column("category", sa.String(30), nullable=False),
         sa.Column("title", sa.String(200), nullable=False),
         sa.Column("description", sa.Text(), nullable=False, server_default=""),
@@ -73,6 +77,7 @@ def upgrade() -> None:
     op.create_table(
         "risks",
         *common(),
+        sa.UniqueConstraint("project_id", "generation_key", name="uq_risk_generation"),
         sa.Column("title", sa.String(200), nullable=False),
         sa.Column("description", sa.Text(), nullable=False, server_default=""),
         sa.Column("category", sa.String(20), nullable=False),
@@ -96,6 +101,7 @@ def upgrade() -> None:
     op.create_table(
         "slos",
         *common(),
+        sa.UniqueConstraint("project_id", "generation_key", name="uq_slo_generation"),
         sa.Column("name", sa.String(200), nullable=False),
         sa.Column("sli", sa.Text(), nullable=False),
         sa.Column("target", sa.String(500), nullable=False),

@@ -1,5 +1,7 @@
 import csv
+import hashlib
 import io
+import json
 import re
 from typing import Any
 
@@ -20,6 +22,10 @@ NUMBERS = re.compile(
 HEADER = (
     "Generated deterministically from requirements; suggestions require human review."
 )
+
+
+def generation_key(*parts: str) -> str:
+    return hashlib.sha256(json.dumps(parts, ensure_ascii=False).encode()).hexdigest()
 
 
 def risk_controls(
@@ -123,6 +129,14 @@ def generate(
     ) -> None:
         tests.append(
             dict(
+                generation_key=generation_key(
+                    "test",
+                    category,
+                    str(requirement.get("id") or requirement["title"])
+                    if requirement
+                    else title,
+                    description if category in ("e2e", "manual_acceptance") else "",
+                ),
                 category=category,
                 title=title[:200],
                 description=description,
@@ -155,6 +169,13 @@ def generate(
         )
         risks.append(
             dict(
+                generation_key=generation_key(
+                    "risk",
+                    source,
+                    str(requirement.get("id") or requirement["title"])
+                    if requirement
+                    else title,
+                ),
                 title=title[:200],
                 description=description,
                 category=category,
@@ -359,7 +380,10 @@ def generate(
     return {
         "test_cases": tests,
         "risks": risks,
-        "slos": generate_slos(context, signals),
+        "slos": [
+            {**slo, "generation_key": generation_key("slo", slo["name"])}
+            for slo in generate_slos(context, signals)
+        ],
     }
 
 

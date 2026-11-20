@@ -139,6 +139,76 @@ def test_generation_preserves_edits_user_rows_and_exports(client: TestClient) ->
     )
 
 
+def test_regeneration_does_not_duplicate_preserved_cases_risks_or_slos(
+    client: TestClient,
+) -> None:
+    owner = token()
+    base = project(client, owner)
+    requirement = client.post(
+        base + "/requirements",
+        headers=owner,
+        json={
+            "title": "Book a launch",
+            "type": "functional",
+            "acceptance_criteria": ["Conflict rejected", "Confirmation sent"],
+        },
+    ).json()
+    generated = client.post(
+        base + "/operations/generate", headers=owner, json={}
+    ).json()
+    edited = {}
+    for kind, path, change in [
+        (
+            "test_cases",
+            "test-cases",
+            {
+                "title": "Reviewed test",
+                "category": "security",
+                "status": "passed",
+                "result_notes": "Run recorded",
+            },
+        ),
+        (
+            "risks",
+            "risks",
+            {"title": "Reviewed risk", "mitigation": "Reviewed controls"},
+        ),
+        (
+            "slos",
+            "slos",
+            {"name": "Reviewed SLO", "target": "99%", "status": "adopted"},
+        ),
+    ]:
+        row = generated[kind][0]
+        result = client.patch(base + f"/{path}/{row['id']}", headers=owner, json=change)
+        assert result.status_code == 200, result.text
+        edited[kind] = result.json()
+    assert (
+        client.patch(
+            base + "/requirements/" + requirement["id"],
+            headers=owner,
+            json={"title": "Renamed launch"},
+        ).status_code
+        == 200
+    )
+    for _ in range(2):
+        response = client.post(base + "/operations/generate", headers=owner, json={})
+        assert response.status_code == 200, response.text
+        for kind, rows in response.json().items():
+            assert len(rows) == len(generated[kind])
+            assert (
+                next(r for r in rows if r["id"] == edited[kind]["id"]) == edited[kind]
+            )
+    replaced = client.post(
+        base + "/operations/generate", headers=owner, json={"replace_edited": True}
+    )
+    assert replaced.status_code == 200, replaced.text
+    for kind, rows in replaced.json().items():
+        assert len(rows) == len(generated[kind])
+        assert all(r["id"] != edited[kind]["id"] and not r["edited"] for r in rows)
+    assert not any(r["executed"] for r in replaced.json()["test_cases"])
+
+
 @pytest.mark.parametrize("status", ["passed", "failed"])
 def test_execution_requires_evidence_and_clear_on_replan(
     client: TestClient, status: str
